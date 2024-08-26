@@ -1,0 +1,11 @@
+*.o
+*.cmd
+*.tmp
+qemu/build/
+qemu/GNUmakefile
+qemu/docs/sphinx/__pycache__/
+qemu/scripts/qapi/__pycache__/
+qemu/tests/qemu-iotests/__pycache__/
+qemu/scripts/tracetool/__pycache__/
+qemu/scripts/tracetool/backend/__pycache__/
+qemu/scripts/tracetool/format/__pycache__/
