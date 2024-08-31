@@ -12,9 +12,6 @@ pos:
   services:
     - docker:dind
   script:
-    - mkdir -p lvgl
-    - git clone $CI_REPOSITORY_URL lvgl
-    - cd lvgl
     - wget https://raw.githubusercontent.com/smartobjectoriented/so3/40-expand-and-document-lvgl-perf-tests/Dockerfile.lvgl
     - pwd
     - ls -la .
