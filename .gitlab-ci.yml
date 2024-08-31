@@ -1,0 +1,38 @@
+stages:
+  - build
+  - test
+  - upload
+
+variables:
+  DOCKER_DRIVER: overlay2 # Ensure Docker uses the appropriate storage driver
+
+pos:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - mkdir -p lvgl
+    - git clone $CI_REPOSITORY_URL lvgl
+    - cd lvgl
+    - wget https://raw.githubusercontent.com/smartobjectoriented/so3/40-expand-and-document-lvgl-perf-tests/Dockerfile.lvgl
+    - pwd
+    - ls -la .
+    - docker build . -f Dockerfile.lvgl -t so3/virt64 --platform linux/amd64
+
+run_performance_check:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker run --privileged -v $CI_PROJECT_DIR:/host -v /dev:/dev so3/virt64
+
+upload_artifact:
+  stage: upload
+  script:
+    - echo "Uploading artifact"
+  artifacts:
+    paths:
+      - perf_check*.log
+    expire_in: 7 days
