@@ -54,10 +54,10 @@
 			load = <0x50c00000>;
 		};
 
-    };
+	};
 	configurations {
 		default = "linux";
-                
+
 		linux {
 			description = "SO3 kernel image including device tree";
 			kernel = "linux";

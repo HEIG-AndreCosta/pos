@@ -12,7 +12,7 @@
 		cpu_off = <0x84000002>;
 		cpu_suspend = <0xc4000001>;
 		method = "hvc";
-		compatible = "arm,psci-0.2\0arm,psci";
+		compatible = "arm,psci-0.2", "arm,psci";
 	};
 
 	chosen {
@@ -23,7 +23,7 @@
 	cpus {
 		#size-cells = <0x00>;
 		#address-cells = <0x01>;
- 
+
 		cpu@0 {
 			reg = <0x00>;
 			enable-method = "psci";
@@ -37,7 +37,7 @@
 			compatible = "arm,cortex-a72";
 			device_type = "cpu";
 		};
-		
+
 #if 0
 
 		cpu@2 {
@@ -64,26 +64,26 @@
 	pl111@0x08800000 {
 		compatible = "qemu,pl111";
 		reg = <0x00 0x08800000 0x00 0x1000>;
-		
+
 		/* Upper panel */
 		upbase = <0x0 0x30000000>;
-		
+
 		/* Lower panel - not used now */
 		lowbase = <0x0 0x0>;
-		 
+
 		/* Screem resolution */
 		hres = <128>;
 		vres = <128>;
 
 		status = "ok";
 	};
-	
+
 	platform@c000000 {
 		interrupt-parent = <0x8002>;
 		ranges = <0x00 0x00 0xc000000 0x2000000>;
 		#address-cells = <0x01>;
 		#size-cells = <0x01>;
-		compatible = "qemu,platform\0simple-bus";
+		compatible = "qemu,platform", "simple-bus";
 	};
 
 	virtio_mmio@a000000 {
@@ -316,20 +316,20 @@
 		compatible = "gpio-keys";
 
 		poweroff {
-			gpios = <0x8004 0x03 0x00>;
+			gpios = <&pl061 0x03 0x00>;
 			linux,code = <0x74>;
 			label = "GPIO Key Poweroff";
 		};
 	};
 
-	pl061@9030000 {
+	pl061: pl061@9030000 {
 		phandle = <0x8004>;
 		clock-names = "apb_pclk";
-		clocks = <0x8000>;
+		clocks = <&clk24mhz>;
 		interrupts = <0x00 0x07 0x04>;
 		gpio-controller;
 		#gpio-cells = <0x02>;
-		compatible = "arm,pl061\0arm,primecell";
+		compatible = "arm,pl061", "arm,primecell";
 		reg = <0x00 0x9030000 0x00 0x1000>;
 	};
 
@@ -339,7 +339,7 @@
 		#interrupt-cells = <0x01>;
 		ranges = <0x1000000 0x00 0x00 0x00 0x3eff0000 0x00 0x10000 0x2000000 0x00 0x10000000 0x00 0x10000000 0x00 0x2eff0000 0x3000000 0x80 0x00 0x80 0x00 0x80 0x00>;
 		reg = <0x40 0x10000000 0x00 0x10000000>;
-		msi-parent = <0x8003>;
+		msi-parent = <&v2m>;
 		dma-coherent;
 		bus-range = <0x00 0xff>;
 		linux,pci-domain = <0x00>;
@@ -351,18 +351,18 @@
 
 	pl031@9010000 {
 		clock-names = "apb_pclk";
-		clocks = <0x8000>;
+		clocks = <&clk24mhz>;
 		interrupts = <0x00 0x02 0x04>;
 		reg = <0x00 0x9010000 0x00 0x1000>;
-		compatible = "arm,pl031\0arm,primecell";
+		compatible = "arm,pl031", "arm,primecell";
 	};
 
 	pl011@9000000 {
-		clock-names = "uartclk\0apb_pclk";
-		clocks = <0x8000 0x8000>;
+		clock-names = "uartclk", "apb_pclk";
+		clocks = <&clk24mhz>, <&clk24mhz>;
 		interrupts = <0x00 0x01 0x04>;
 		reg = <0x00 0x9000000 0x00 0x1000>;
-		compatible = "arm,pl011\0arm,primecell";
+		compatible = "arm,pl011", "arm,primecell";
 	};
 
 	pmu {
@@ -378,7 +378,7 @@
 		interrupt-controller;
 		#interrupt-cells = <0x03>;
 
-		v2m@8020000 {
+		v2m: v2m@8020000 {
 			phandle = <0x8003>;
 			reg = <0x00 0x8020000 0x00 0x1000>;
 			msi-controller;
@@ -399,7 +399,7 @@
 		compatible = "arm,armv7-timer";
 	};
 
-	apb-pclk {
+	clk24mhz: apb-pclk {
 		phandle = <0x8000>;
 		clock-output-names = "clk24mhz";
 		clock-frequency = <0x16e3600>;
