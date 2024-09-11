@@ -18,13 +18,6 @@
 
 "The Raspberry Pi Sense HAT Emulator library"
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-
 import sys
 
 from .sense_hat import SenseHat, SenseHat as AstroPi
@@ -42,7 +35,7 @@ from .stick import (
     )
 
 __project__      = 'sense-emu'
-__version__      = '1.1'
+__version__      = '1.2.1'
 __author__       = 'Raspberry Pi Foundation'
 __author_email__ = 'info@raspberrypi.org'
 __url__          = 'http://sense-emu.readthedocs.io/'
@@ -97,5 +90,3 @@ __entry_points__ = {
         'sense_emu_gui = sense_emu.gui:main',
         ],
     }
-
-
