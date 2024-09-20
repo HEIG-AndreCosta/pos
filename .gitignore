@@ -9,3 +9,5 @@ qemu/tests/qemu-iotests/__pycache__/
 qemu/scripts/tracetool/__pycache__/
 qemu/scripts/tracetool/backend/__pycache__/
 qemu/scripts/tracetool/format/__pycache__/
+*compile_commands.json*
+*.img.*
