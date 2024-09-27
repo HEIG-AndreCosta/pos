@@ -1,3 +1,6 @@
+*
+!/**/
+!*.*
 *.o
 *.cmd
 *.tmp
@@ -11,3 +14,11 @@ qemu/scripts/tracetool/backend/__pycache__/
 qemu/scripts/tracetool/format/__pycache__/
 *compile_commands.json*
 *.img.*
+*.itb
+*.ko
+*.cache
+*.mod
+*.mod.c
+*.symvers
+u-boot/drivers/video/u_boot_logo.S
+*.order
