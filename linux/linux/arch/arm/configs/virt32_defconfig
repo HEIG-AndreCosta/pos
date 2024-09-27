@@ -1887,7 +1887,7 @@ CONFIG_BCMA_POSSIBLE=y
 # Multifunction device drivers
 #
 CONFIG_MFD_CORE=y
-# CONFIG_MFD_RPISENSE_CORE is not set
+CONFIG_MFD_RPISENSE_CORE=y
 # CONFIG_MFD_ACT8945A is not set
 # CONFIG_MFD_AS3711 is not set
 # CONFIG_MFD_AS3722 is not set
