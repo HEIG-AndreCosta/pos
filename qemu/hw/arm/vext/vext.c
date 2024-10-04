@@ -60,10 +60,13 @@ static void vext_write(void *raw, hwaddr offset, uint64_t value, unsigned size)
 {
 	vext_state_t *instance = (vext_state_t *)raw;
 
-	if (offset > 0) {
+	switch (offset) {
+	case 0x3a:
+		instance->leds = value & 0xFF;
+		break;
+	default:
 		return;
 	}
-	instance->leds = value & 0xFF;
 	update_frontend(instance);
 }
 static const MemoryRegionOps vext_ops = {
