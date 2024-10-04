@@ -33,11 +33,6 @@ typedef struct {
 	/*
 		7:0 LEDx RW 
 			write '1' to turn the LEDx ON, write '0' to turn it OFF
-		8 LED6_7_EN 
-			write '1' to control the LEDs 6 /7 from this register
-			write '0' to let the incremental encoder to control these LEDs
-		15:9 unassigned RW
-			read as '0'
 	*/
 	uint8_t leds;
 
