@@ -2365,7 +2365,7 @@ static void machvirt_init(MachineState *machine)
     	   sysbus_create_simple("pl050_mouse", (hwaddr) vms->memmap[VIRT_KMI1].base,
     			   qdev_get_gpio_in(vms->gic, vms->irqmap[VIRT_KMI1]));
 
-#if 0
+#if 1
             /* Attach the vext controller */
             vms->vext = sysbus_create_simple("vext", 0x20000000, NULL);
 #endif
