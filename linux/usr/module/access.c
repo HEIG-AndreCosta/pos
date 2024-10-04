@@ -14,7 +14,7 @@ static void *led_ptr = NULL;
 static int access_init(void)
 {
 	printk("Hello!\n");
-	led_ptr = ioremap(0x2000003a, 8);
+	led_ptr = ioremap(0x20000000, 8);
 	if (!led_ptr) {
 		printk("ERROR Remaping led memory\n");
 		return 1;
