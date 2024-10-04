@@ -20,7 +20,7 @@ static int access_init(void)
 		return 1;
 	}
 	printk("Turning LEDS 1-4 ON\n");
-	writew(0x11E, led_ptr);
+	writeb(0x1E, led_ptr);
 
 	return 0;
 }
