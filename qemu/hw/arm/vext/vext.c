@@ -25,7 +25,11 @@
 #include "vext_emul.h"
 #include <stdint.h>
 
-#define DEVICE_NAME "vext"
+#define DEVICE_NAME  "vext"
+#define PUSH_BUT_REG 0x12
+#define IRQ_CTRL_REG 0x18
+#define LED_REG	     0x3A
+#define SWITCH_MASK  0x1F
 typedef struct {
 	SysBusDevice busdev;
 	MemoryRegion iomem;
@@ -36,18 +40,35 @@ typedef struct {
 	*/
 	uint8_t leds;
 
+	/*
+		4:0 SWITCHx R 
+			'1' switch pressed '0' switch not pressed
+		7:5
+			Reserved	
+	*/
+	uint8_t switch_state;
+
 } vext_state_t;
-void vext_process_switch(void *opaque, cJSON *packet)
+void vext_process_switch(void *raw, cJSON *packet)
 {
-	/* to be completed ... */
+	vext_state_t *instance = (vext_state_t *)raw;
+	char *device = cJSON_GetObjectItem(packet, "device")->valuestring;
+	cJSON *status = cJSON_GetObjectItem(packet, "status");
+	if (strcmp(device, "switch") == 0) {
+		instance->switch_state = status->valueint & SWITCH_MASK;
+		printf("Switch State: %#x\n", instance->switch_state);
+	}
 }
 static uint64_t vext_read(void *raw, hwaddr offset, unsigned size)
 {
 	vext_state_t *instance = (vext_state_t *)raw;
-	if (offset > 0) {
-		return 0;
+	switch (offset) {
+	case PUSH_BUT_REG:
+		return instance->switch_state;
+	case LED_REG:
+		return instance->leds;
 	}
-	return instance->leds;
+	return 0;
 }
 static void update_frontend(vext_state_t *instance)
 {
