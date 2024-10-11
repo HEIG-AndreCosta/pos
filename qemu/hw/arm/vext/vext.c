@@ -110,7 +110,7 @@ void vext_process_switch(void *raw, cJSON *packet)
 			qemu_irq_raise(instance->irq);
 		}
 		instance->push_btn = new_btn_state;
-		printf("Switch State: %#x\n", instance->push_btn);
+		DBG("Switch State: %#x\n", instance->push_btn);
 	}
 }
 static uint64_t vext_read(void *raw, hwaddr offset, unsigned size)
