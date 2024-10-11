@@ -18,13 +18,18 @@
 #define BASE_GIC_DISTR_ADDR	0x08000000
 #define ICDDCR			(BASE_GIC_DISTR_ADDR + 0x0)
 #define ICDISER_BASE		(BASE_GIC_DISTR_ADDR + 0x100)
+#define AFFINITY_ADDR		(BASE_GIC_DISTR_ADDR + 0x850)
 #define ICDISER(interrupt)	(ICDISER_BASE + interrupt * sizeof(uint32_t))
 #define BASE_CPU_LOCAL_IF_ADDR	0x08010000
 #define ICCICR			(BASE_CPU_LOCAL_IF_ADDR + 0)
 #define ICCPMR			(BASE_CPU_LOCAL_IF_ADDR + 0x4)
 #define ICCIAR			(BASE_CPU_LOCAL_IF_ADDR + 0xC)
 #define ICCEOIR			(BASE_CPU_LOCAL_IF_ADDR + 0x10)
-#define INTERRUPT_NUMBER	50
+#define INTERRUPT_RAW_NUMBER	50
+
+// L’IRQ est de type SPI ; par conséquent, un offset de 32 est rajouté au no. IRQ.
+#define INTERRUPT_NUMBER_OFFSET 32
+#define INTERRUPT_NUMBER	(INTERRUPT_RAW_NUMBER + INTERRUPT_NUMBER_OFFSET)
 #define ICDISER_NO		(INTERRUPT_NUMBER / 32)
 #define ICDISER_BIT_MASK	(1 << (INTERRUPT_NUMBER % 32))
 
@@ -45,6 +50,7 @@ void hello_irq_handler(void)
 		VEXT_IRQ_CTRL_BTN_SHIFT;
 
 	REG_ACCESS(VEXT_LED_REG) = (1 << btn_pressed);
+	REG_ACCESS(VEXT_IRQ_CTRL_REG) |= 0x1;
 
 	REG_ACCESS(ICCEOIR) = irq_id;
 }
@@ -59,7 +65,11 @@ static int do_hello(struct cmd_tbl *cmdtp, int flag, int argc,
 	REG_ACCESS(ICCICR) |= 0x1;
 	// Activate interruption #50
 	REG_ACCESS(ICDISER(ICDISER_NO)) |= ICDISER_BIT_MASK;
+	REG_ACCESS(AFFINITY_ADDR) = 0x01010101;
 
+	local_irq_enable();
+
+	REG_ACCESS(VEXT_IRQ_CTRL_REG) |= 0x80;
 	printf("%s\n", hello_str);
 
 	return 0;
