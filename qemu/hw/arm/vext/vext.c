@@ -145,9 +145,14 @@ static void vext_write(void *raw, hwaddr offset, uint64_t value, unsigned size)
 		if (value & IRQ_CLEAR_MASK) {
 			//Clearing this bit means the irq_status and irq_source are no longer valid
 			// as per the documentation so no need to clear those aswell
+			printf("Clearing IRQ");
 			instance->irq_ctrl &= ~IRQ_STATUS_MASK;
 			qemu_irq_lower(instance->irq);
 		}
+		if (value & IRQ_ENABLE_MASK) {
+			printf("Enabling IRQ");
+		}
+
 		instance->irq_ctrl = (instance->irq_ctrl & ~IRQ_ENABLE_MASK) |
 				     (value & IRQ_ENABLE_MASK);
 	default:
