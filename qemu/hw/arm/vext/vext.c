@@ -95,7 +95,7 @@ void vext_process_switch(void *raw, cJSON *packet)
 		    (instance->irq_ctrl &
 		     (IRQ_ENABLE_MASK | IRQ_STATUS_MASK)) ==
 			    (IRQ_ENABLE_MASK | IRQ_STATUS_MASK)) {
-			printf("Raising IRQ");
+			DBG("Raising IRQ\n");
 
 			//Indicate which button generated the irq
 			instance->irq_ctrl =
@@ -145,12 +145,12 @@ static void vext_write(void *raw, hwaddr offset, uint64_t value, unsigned size)
 		if (value & IRQ_CLEAR_MASK) {
 			//Clearing this bit means the irq_status and irq_source are no longer valid
 			// as per the documentation so no need to clear those aswell
-			printf("Clearing IRQ");
+			DBG("Clearing IRQ\n");
 			instance->irq_ctrl &= ~IRQ_STATUS_MASK;
 			qemu_irq_lower(instance->irq);
 		}
 		if (value & IRQ_ENABLE_MASK) {
-			printf("Enabling IRQ");
+			DBG("Enabling IRQ\n");
 		}
 
 		instance->irq_ctrl = (instance->irq_ctrl & ~IRQ_ENABLE_MASK) |
