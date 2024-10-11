@@ -81,35 +81,63 @@ typedef struct {
 	uint8_t irq_ctrl;
 
 } vext_state_t;
+
+static uint8_t btn_mask_to_btn_number(uint8_t mask);
+static void handle_irq(vext_state_t *instance, uint8_t new_button_state);
+
+/*
+ * Returns the number of the first button whose corresponding bit is set to '1'
+ * Returns 0xFF if input == '0'
+ */
+uint8_t btn_mask_to_btn_number(uint8_t mask)
+{
+	for (int i = 0; i < 8; ++i) {
+		if (mask & 1) {
+			return i;
+		}
+		mask >>= 1;
+	}
+	return 0xFF;
+}
+void handle_irq(vext_state_t *instance, uint8_t new_button_state)
+{
+	if (new_button_state == 0) {
+		return;
+	}
+	//Compare with latest value to see which button got us here
+	const uint8_t btn_pressed = instance->push_btn ^ new_button_state;
+	const uint8_t btn_number = btn_mask_to_btn_number(btn_pressed);
+	const uint8_t irq_enabled = instance->irq_ctrl & IRQ_ENABLE_MASK;
+	const uint8_t irq_pending = instance->irq_ctrl & IRQ_STATUS_MASK;
+
+	if (btn_number != 0xFF && irq_enabled && !irq_pending) {
+		DBG("Raising IRQ\n");
+		//Indicate which button generated the irq
+		instance->irq_ctrl = (instance->irq_ctrl & ~IRQ_BTN_MASK) |
+				     (btn_number << IRQ_BTN_SHIFT);
+
+		//Indicate the source is button press
+		instance->irq_ctrl &= ~IRQ_SOURCE_MASK;
+
+		//Indicate we generated the irq
+		instance->irq_ctrl |= IRQ_STATUS_MASK;
+
+		qemu_irq_raise(instance->irq);
+		DBG("IRQ CTRL State: %#x\n", instance->irq_ctrl);
+	}
+}
 void vext_process_switch(void *raw, cJSON *packet)
 {
 	vext_state_t *instance = (vext_state_t *)raw;
 	char *device = cJSON_GetObjectItem(packet, "device")->valuestring;
 	cJSON *status = cJSON_GetObjectItem(packet, "status");
 	if (strcmp(device, "switch") == 0) {
-		const uint8_t new_btn_state = status->valueint & SWITCH_MASK;
-		//Compute the difference from last state
-		const uint8_t btn_pressed = new_btn_state ^ instance->push_btn;
-		const uint8_t irq_enabled = instance->irq_ctrl &
-					    IRQ_ENABLE_MASK;
-		const uint8_t irq_pending = instance->irq_ctrl &
-					    IRQ_STATUS_MASK;
-
-		if (btn_pressed && irq_enabled && !irq_pending) {
-			DBG("Raising IRQ\n");
-			//Indicate which button generated the irq
-			instance->irq_ctrl =
-				(instance->irq_ctrl & ~IRQ_BTN_MASK) |
-				(btn_pressed << IRQ_BTN_SHIFT);
-			//Indicate the source is button press
-			instance->irq_ctrl &= ~IRQ_SOURCE_MASK;
-
-			//Indicate we generated the irq
-			instance->irq_ctrl |= IRQ_STATUS_MASK;
-
-			qemu_irq_raise(instance->irq);
+		const uint8_t new_state = status->valueint & SWITCH_MASK;
+		if (new_state != 0) {
+			handle_irq(instance, new_state);
 		}
-		instance->push_btn = new_btn_state;
+
+		instance->push_btn = new_state;
 		DBG("Switch State: %#x\n", instance->push_btn);
 	}
 }
