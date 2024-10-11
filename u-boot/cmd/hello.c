@@ -36,21 +36,52 @@
 #define BASE_VEXT_ADDR		0x20000000
 #define VEXT_IRQ_CTRL_REG	(BASE_VEXT_ADDR + 0x18)
 #define VEXT_LED_REG		(BASE_VEXT_ADDR + 0x3A)
+#define VEXT_TIMER_REG		(BASE_VEXT_ADDR + 0x40)
+#define VEXT_TIMER_ENABLE_MASK	(0x1)
+#define VEXT_TIMER_CLEAR_MASK	(0x2)
 #define VEXT_IRQ_CTRL_BTN_MASK	(0xE)
 #define VEXT_IRQ_CTRL_BTN_SHIFT (0x1)
 
+#define VEXT_IRQ_SOURCE_MASK	0x60
+#define VEXT_IRQ_SOURCE_SHIFT	5
+#define VEXT_IRQ_SOURCE_BTN	0
+#define VEXT_IRQ_SOURCE_LBA	1
+#define VEXT_IRQ_SOURCE_TIMER	VEXT_IRQ_SOURCE_LBA
+
+uint8_t irq_source(uint8_t reg_state)
+{
+	return (reg_state & VEXT_IRQ_SOURCE_MASK) >> VEXT_IRQ_SOURCE_SHIFT;
+}
+
 const char *hello_str = "Hello My Cutie Pie!";
+
+static int status = 0;
+static int curr_led = -1;
 
 void hello_irq_handler(void)
 {
 	uint8_t irq_id = REG_ACCESS(ICCIAR) & 0xFF;
+	uint8_t irq_reg = REG_ACCESS(VEXT_IRQ_CTRL_REG);
+	uint8_t irq_src = irq_source(irq_reg);
 
-	uint8_t btn_pressed =
-		(REG_ACCESS(VEXT_IRQ_CTRL_REG) & VEXT_IRQ_CTRL_BTN_MASK) >>
-		VEXT_IRQ_CTRL_BTN_SHIFT;
-
-	REG_ACCESS(VEXT_LED_REG) = (1 << btn_pressed);
-	REG_ACCESS(VEXT_IRQ_CTRL_REG) |= 0x1;
+	printf("Source: %#x\n", irq_src);
+	if (irq_src == VEXT_IRQ_SOURCE_TIMER) {
+		status = !status;
+		REG_ACCESS(VEXT_TIMER_REG) |=
+			(VEXT_TIMER_ENABLE_MASK | VEXT_TIMER_CLEAR_MASK);
+	} else if (irq_src == VEXT_IRQ_SOURCE_BTN) {
+		curr_led = (irq_reg & VEXT_IRQ_CTRL_BTN_MASK) >>
+			   VEXT_IRQ_CTRL_BTN_SHIFT;
+		status = 1;
+		REG_ACCESS(VEXT_IRQ_CTRL_REG) |= 0x1;
+	}
+	if (curr_led >= 0) {
+		if (status) {
+			REG_ACCESS(VEXT_LED_REG) = (1 << curr_led);
+		} else {
+			REG_ACCESS(VEXT_LED_REG) = 0;
+		}
+	}
 
 	REG_ACCESS(ICCEOIR) = irq_id;
 }
@@ -70,6 +101,7 @@ static int do_hello(struct cmd_tbl *cmdtp, int flag, int argc,
 	local_irq_enable();
 
 	REG_ACCESS(VEXT_IRQ_CTRL_REG) |= 0x80;
+	REG_ACCESS(VEXT_TIMER_REG) |= VEXT_TIMER_ENABLE_MASK;
 	printf("%s\n", hello_str);
 
 	return 0;
