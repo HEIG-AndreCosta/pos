@@ -96,9 +96,16 @@ void vext_process_switch(void *raw, cJSON *packet)
 		     (IRQ_ENABLE_MASK | IRQ_STATUS_MASK)) ==
 			    (IRQ_ENABLE_MASK | IRQ_STATUS_MASK)) {
 			printf("Raising IRQ");
+
+			//Indicate which button generated the irq
 			instance->irq_ctrl =
 				(instance->irq_ctrl & ~IRQ_BTN_MASK) |
 				(btn_pressed << IRQ_BTN_SHIFT);
+			//Indicate the source is button press
+			instance->irq_ctrl &= ~IRQ_SOURCE_MASK;
+
+			//Indicate we generated the irq
+			instance->irq_ctrl |= IRQ_STATUS_MASK;
 
 			qemu_irq_raise(instance->irq);
 		}
