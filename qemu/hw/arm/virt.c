@@ -2369,8 +2369,8 @@ static void machvirt_init(MachineState *machine)
             /* Attach the vext controller */
             vms->vext = sysbus_create_simple("vext", 0x20000000, NULL);
 #endif
-#if 0
-            /* Attach vext IRQ to GIC IRQ #50 */
+#if 1
+           /* Attach vext IRQ to GIC IRQ #50 */
             sysbus_connect_irq(SYS_BUS_DEVICE(vms->vext), 0, qdev_get_gpio_in(vms->gic, 50));
 #endif
 
