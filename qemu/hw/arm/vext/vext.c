@@ -170,6 +170,9 @@ static void vext_init(Object *obj)
 	DeviceState *dev = DEVICE(obj);
 	SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
 	vext_state_t *instance = OBJECT_CHECK(vext_state_t, dev, DEVICE_NAME);
+	instance->leds = 0;
+	instance->irq_ctrl = 0;
+	instance->push_btn = 0;
 	sysbus_init_irq(sbd, &instance->irq);
 	memory_region_init_io(&instance->iomem, obj, &vext_ops, instance,
 			      DEVICE_NAME, 0x1000);
