@@ -197,7 +197,7 @@ void do_fiq (struct pt_regs *pt_regs)
 
 void do_irq (struct pt_regs *pt_regs)
 {
-  /* To be completed (POS) */
+  hello_irq_handler();
 
   printf("Interrupt ReQuest !\n");
 }
