@@ -82,7 +82,7 @@ static void vext_write(void *raw, hwaddr offset, uint64_t value, unsigned size)
 	vext_state_t *instance = (vext_state_t *)raw;
 
 	switch (offset) {
-	case 0x3a:
+	case LED_REG:
 		instance->leds = value & 0xFF;
 		break;
 	default:
