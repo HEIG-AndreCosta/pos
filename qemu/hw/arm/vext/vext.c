@@ -90,13 +90,13 @@ void vext_process_switch(void *raw, cJSON *packet)
 		const uint8_t new_btn_state = status->valueint & SWITCH_MASK;
 		//Compute the difference from last state
 		const uint8_t btn_pressed = new_btn_state ^ instance->push_btn;
+		const uint8_t irq_enabled = instance->irq_ctrl &
+					    IRQ_ENABLE_MASK;
+		const uint8_t irq_pending = instance->irq_ctrl &
+					    IRQ_STATUS_MASK;
 
-		if (btn_pressed &&
-		    (instance->irq_ctrl &
-		     (IRQ_ENABLE_MASK | IRQ_STATUS_MASK)) ==
-			    (IRQ_ENABLE_MASK | IRQ_STATUS_MASK)) {
+		if (btn_pressed && irq_enabled && !irq_pending) {
 			DBG("Raising IRQ\n");
-
 			//Indicate which button generated the irq
 			instance->irq_ctrl =
 				(instance->irq_ctrl & ~IRQ_BTN_MASK) |
