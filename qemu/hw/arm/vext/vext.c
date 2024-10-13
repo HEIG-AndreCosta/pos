@@ -90,8 +90,8 @@ typedef struct {
 	uint8_t irq_ctrl;
 
 	/*
-		0 TIMER_ENABLE RW
-			Write '1' to enable a one second timer
+		0 TIMER_ENABLE W
+			Write '1' to enable a one second, one-shot timer
 		1 ACK_TIMER W
 			Write '1' to ack the timer irq
 	 */
