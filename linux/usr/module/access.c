@@ -4,6 +4,7 @@
  * Copyright (c) 2020 HEIG-VD, REDS Institute
  *******************************************************************/
 
+#include "rpisense.h"
 #include "linux/export.h"
 #include "linux/ioport.h"
 #include "linux/irqreturn.h"
@@ -30,6 +31,7 @@
 struct vext_data {
 	void *base_ptr;
 };
+#if 0
 static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 {
 	struct vext_data *data = (struct vext_data *)raw;
@@ -41,9 +43,12 @@ static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 	printk("IRQ Button: %d\n", btn_pressed);
 	return IRQ_HANDLED;
 }
+#endif
 
 static int access_probe(struct platform_device *pdev)
 {
+	int i;
+#if 0
 	struct resource *iores;
 	int irq;
 	int ret;
@@ -79,6 +84,12 @@ static int access_probe(struct platform_device *pdev)
 	//enable interrupts
 	printk("Enabling interrupts\n");
 	writeb(0x80, priv->base_ptr + IRQ_CTRL_REG_OFFSET);
+#endif
+	rpisense_init();
+	for (i = 0; i < 5; i += 2) {
+		display_led(i, 1);
+	}
+
 	return 0;
 }
 static int access_remove(struct platform_device *pdev)

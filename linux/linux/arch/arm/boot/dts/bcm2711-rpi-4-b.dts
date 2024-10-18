@@ -23,6 +23,9 @@
 #endif
 	   };
 	   
+	vext{
+		compatible = "pos,vext";
+	};
 	/* Will be filled by the bootloader */
 	memory@0 {
 		device_type = "memory";
