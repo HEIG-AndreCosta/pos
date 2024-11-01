@@ -1,21 +1,22 @@
+this-makefile := $(lastword $(MAKEFILE_LIST))
+abs_srctree := $(realpath $(dir $(this-makefile)))
 
+-include $(abs_srctree)/../../../build.conf
 
-KDIR = ../../linux
+KDIR = $(abs_srctree)/../../linux
 
 obj-m := access_mod.o
 
 access_mod-objs += access.o rpisense.o
 
-module:
-	if [ ! -f ${KDIR}/Module.symvers ]; then \
-		echo "Generating Module.symvers..." ; \
-		make -C ${KDIR} modules ; \
-	fi
+.PHONY: module clean
 
-	@make -C $(KDIR) M=$(PWD)/module modules
-	@cp *.ko ../out
-	
+module: $(abs_srctree)/../../../build.conf
+	@make -C $(KDIR) M=$(abs_srctree) modules
+	@mkdir -p ../out/$(PLATFORM)
+	@cp *.ko ../out/$(PLATFORM)
+
 clean:
-	@make -C $(KDIR) M=$(PWD)/module clean
+	@make -C $(KDIR) M=$(abs_srctree) clean
 
 

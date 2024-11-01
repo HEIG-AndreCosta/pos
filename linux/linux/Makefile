@@ -34,6 +34,13 @@ __all:
 # descending is started. They are now explicitly listed as the
 # prepare rule.
 
+this-makefile := $(lastword $(MAKEFILE_LIST))
+abs_srctree := $(realpath $(dir $(this-makefile)))
+abs_objtree := $(CURDIR)
+
+-include $(abs_srctree)/../../build.conf
+$(info *********** Running for $(PLATFORM) *********)
+
 ifneq ($(sub_make_done),1)
 
 # Do not use make's built-in rules and variables
@@ -120,10 +127,7 @@ export quiet Q KBUILD_VERBOSE
 # The O= assignment takes precedence over the KBUILD_OUTPUT environment
 # variable.
 
-# Do we want to change the working directory?
-ifeq ("$(origin O)", "command line")
-  KBUILD_OUTPUT := $(O)
-endif
+KBUILD_OUTPUT := build/$(PLATFORM)
 
 ifneq ($(KBUILD_OUTPUT),)
 # Make's built-in functions such as $(abspath ...), $(realpath ...) cannot
@@ -145,8 +149,6 @@ else
 need-sub-make := 1
 endif
 
-abs_srctree := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
-
 ifneq ($(words $(subst :, ,$(abs_srctree))), 1)
 $(error source directory cannot contain spaces or colons)
 endif
@@ -159,8 +161,6 @@ ifneq ($(abs_srctree),$(abs_objtree))
 MAKEFLAGS += --include-dir=$(abs_srctree)
 need-sub-make := 1
 endif
-
-this-makefile := $(lastword $(MAKEFILE_LIST))
 
 ifneq ($(filter 3.%,$(MAKE_VERSION)),)
 # 'MAKEFLAGS += -rR' does not immediately become effective for GNU Make 3.x
@@ -368,14 +368,13 @@ include scripts/subarch.include
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
 
 # (Octopus) Usual toolchains for our systems
-include ../../build.conf
 
 ifeq ($(PLATFORM),$(filter $(PLATFORM),x86 x86-qemu))
 
 ARCH		?= x86
 
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),virt32 rpi4))
- 
+
 ARCH            ?= arm
 CROSS_COMPILE	?= arm-linux-gnueabihf-
 
