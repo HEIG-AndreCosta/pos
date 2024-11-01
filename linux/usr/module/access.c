@@ -5,9 +5,10 @@
  *******************************************************************/
 
 #include "rpisense.h"
-#include "linux/export.h"
-#include "linux/ioport.h"
-#include "linux/irqreturn.h"
+#include <linux/export.h>
+#include <linux/ioport.h>
+#include <linux/irqreturn.h>
+#include <linux/leds.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -28,10 +29,43 @@
 #define VEXT_IRQ_CTRL_BTN_MASK	(0xE)
 #define VEXT_IRQ_CTRL_BTN_SHIFT (0x1)
 
+#define NO_LEDS			5
+
+const static char *led_names[NO_LEDS] = { "mydev_led0", "mydev_led1",
+					  "mydev_led2", "mydev_led3",
+					  "mydev_led4" };
+
+struct led_data {
+	struct led_classdev cdev;
+	int led_no;
+};
+
 struct vext_data {
 	void *base_ptr;
+	struct led_data leds[NO_LEDS];
 };
+
+void led_set(struct led_classdev *cdev, enum led_brightness brightness)
+{
+	struct led_data *data = container_of(cdev, struct led_data, cdev);
+	printk("Led set %d ", data->led_no);
+	switch (brightness) {
+	case LED_OFF:
+		printk("OFF\n");
+		break;
+	case LED_ON:
+		printk("ON\n");
+		break;
+	case LED_HALF:
+		printk("HALF\n");
+		break;
+	case LED_FULL:
+		printk("FULL\n");
+		break;
+	}
+}
 #if 0
+
 static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 {
 	struct vext_data *data = (struct vext_data *)raw;
@@ -47,24 +81,23 @@ static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 
 static int access_probe(struct platform_device *pdev)
 {
-	int i;
-#if 0
+	int i, ret;
 	struct resource *iores;
-	int irq;
-	int ret;
-	struct vext_data *priv = kmalloc(sizeof(struct vext_data), GFP_KERNEL);
+	struct vext_data *priv = kzalloc(sizeof(struct vext_data), GFP_KERNEL);
+	BUG_ON(!priv);
 
-	if (!priv) {
-		printk("Couldn't allocate memory for vext data\n");
-		;
-		return -ENOMEM;
-	}
-
+	printk("Setting Platform drv data\n");
 	platform_set_drvdata(pdev, priv);
 
+	printk("Getting ioresource mem\n");
 	iores = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	irq = platform_get_irq(pdev, 0);
+	BUG_ON(!iores);
 
+	priv->base_ptr = ioremap(iores->start, iores->end - iores->start + 1);
+	BUG_ON(!priv->base_ptr);
+
+#if 0
+	irq = platform_get_irq(pdev, 0);
 	printk("Requesting IRQ\n");
 	ret = request_irq(irq, on_switch_press_top_half, IRQF_TRIGGER_HIGH,
 			  DEVICE_NAME, priv);
@@ -73,22 +106,38 @@ static int access_probe(struct platform_device *pdev)
 		kfree(priv);
 		return ret;
 	}
-	priv->base_ptr = ioremap(iores->start, iores->end - iores->start + 1);
+#endif
 
-	if (!priv->base_ptr) {
-		printk("ERROR Remaping vext memory\n");
-		return 1;
+	priv->leds[0].cdev.name = "mydev_led0";
+	priv->leds[1].cdev.name = "mydev_led1";
+	priv->leds[2].cdev.name = "mydev_led2";
+	priv->leds[3].cdev.name = "mydev_led3";
+	priv->leds[4].cdev.name = "mydev_led4";
+
+	for (i = 0; i < NO_LEDS; ++i) {
+		printk("Setup led %d\n", i);
+		/*priv->leds[i].cdev.name = led_names[i];*/
+		printk("Setup brightness set %d\n", i);
+		priv->leds[i].cdev.brightness_set = led_set;
+		printk("Setup Led number set %d\n", i);
+		priv->leds[i].led_no = i;
+		printk("Register led classdev %d\n", i);
+		ret = led_classdev_register(&pdev->dev, &priv->leds[i].cdev);
+		BUG_ON(ret);
 	}
+#if 0
 	printk("Turning LEDS 1-4 ON\n");
 	writeb(0x1E, priv->base_ptr + LED_OFFSET);
 	//enable interrupts
 	printk("Enabling interrupts\n");
 	writeb(0x80, priv->base_ptr + IRQ_CTRL_REG_OFFSET);
 #endif
+#if 0
 	rpisense_init();
 	for (i = 0; i < 5; i += 2) {
 		display_led(i, 1);
 	}
+#endif
 
 	return 0;
 }
