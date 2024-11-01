@@ -4,7 +4,7 @@
  * Copyright (c) 2020 HEIG-VD, REDS Institute
  *******************************************************************/
 
-#include "rpisense.h"
+#include "linux/types.h"
 #include <linux/export.h>
 #include <linux/ioport.h>
 #include <linux/irqreturn.h>
@@ -43,26 +43,23 @@ struct led_data {
 struct vext_data {
 	void *base_ptr;
 	struct led_data leds[NO_LEDS];
+	uint8_t led_status;
 };
 
-void led_set(struct led_classdev *cdev, enum led_brightness brightness)
+void led_set(struct led_classdev *raw_dev, enum led_brightness brightness)
 {
-	struct led_data *data = container_of(cdev, struct led_data, cdev);
-	printk("Led set %d ", data->led_no);
-	switch (brightness) {
-	case LED_OFF:
-		printk("OFF\n");
-		break;
-	case LED_ON:
-		printk("ON\n");
-		break;
-	case LED_HALF:
-		printk("HALF\n");
-		break;
-	case LED_FULL:
-		printk("FULL\n");
-		break;
+	struct led_data *data = container_of(raw_dev, struct led_data, cdev);
+	struct platform_device *pdev =
+		container_of(raw_dev->dev->parent, struct platform_device, dev);
+	struct vext_data *drv_data = platform_get_drvdata(pdev);
+	const uint8_t mask = 1 << data->led_no;
+
+	if (brightness) {
+		drv_data->led_status |= mask;
+	} else {
+		drv_data->led_status &= ~mask;
 	}
+	iowrite8(drv_data->led_status, drv_data->base_ptr + LED_OFFSET);
 }
 #if 0
 
@@ -86,10 +83,8 @@ static int access_probe(struct platform_device *pdev)
 	struct vext_data *priv = kzalloc(sizeof(struct vext_data), GFP_KERNEL);
 	BUG_ON(!priv);
 
-	printk("Setting Platform drv data\n");
 	platform_set_drvdata(pdev, priv);
 
-	printk("Getting ioresource mem\n");
 	iores = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	BUG_ON(!iores);
 
@@ -108,20 +103,10 @@ static int access_probe(struct platform_device *pdev)
 	}
 #endif
 
-	priv->leds[0].cdev.name = "mydev_led0";
-	priv->leds[1].cdev.name = "mydev_led1";
-	priv->leds[2].cdev.name = "mydev_led2";
-	priv->leds[3].cdev.name = "mydev_led3";
-	priv->leds[4].cdev.name = "mydev_led4";
-
 	for (i = 0; i < NO_LEDS; ++i) {
-		printk("Setup led %d\n", i);
-		/*priv->leds[i].cdev.name = led_names[i];*/
-		printk("Setup brightness set %d\n", i);
+		priv->leds[i].cdev.name = led_names[i];
 		priv->leds[i].cdev.brightness_set = led_set;
-		printk("Setup Led number set %d\n", i);
 		priv->leds[i].led_no = i;
-		printk("Register led classdev %d\n", i);
 		ret = led_classdev_register(&pdev->dev, &priv->leds[i].cdev);
 		BUG_ON(ret);
 	}
