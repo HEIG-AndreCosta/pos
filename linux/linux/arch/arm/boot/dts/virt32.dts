@@ -9,6 +9,7 @@
 		compatible = "pos,vext";
 		reg = <0x0 0x20000000 0x0 0x1000>;
 		interrupts = <0 50 4>; // 0 for spi, 50 for irq number, 4 for high level interrupt
+		platform_type = "virt32";
 	};
 
 	psci {

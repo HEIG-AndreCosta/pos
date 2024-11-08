@@ -25,6 +25,7 @@
 	   
 	vext{
 		compatible = "pos,vext";
+		platform_type = "rpi4";
 	};
 	/* Will be filled by the bootloader */
 	memory@0 {
