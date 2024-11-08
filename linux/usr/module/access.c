@@ -4,6 +4,7 @@
  * Copyright (c) 2020 HEIG-VD, REDS Institute
  *******************************************************************/
 
+#include <linux/string.h>
 #include "linux/types.h"
 #include <linux/export.h>
 #include <linux/ioport.h>
@@ -18,6 +19,8 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/interrupt.h>
+#include <linux/of.h>
+#include "rpisense.h"
 
 #define DEVICE_NAME		"vext"
 #define SWITCH_OFFSET		0x12
@@ -44,6 +47,7 @@ struct vext_data {
 	void *base_ptr;
 	struct led_data leds[NO_LEDS];
 	uint8_t led_status;
+	bool is_virt32; // It's either virt32 or rpi4
 };
 
 void led_set(struct led_classdev *raw_dev, enum led_brightness brightness)
@@ -52,6 +56,7 @@ void led_set(struct led_classdev *raw_dev, enum led_brightness brightness)
 	struct platform_device *pdev =
 		container_of(raw_dev->dev->parent, struct platform_device, dev);
 	struct vext_data *drv_data = platform_get_drvdata(pdev);
+
 	const uint8_t mask = 1 << data->led_no;
 
 	if (brightness) {
@@ -59,7 +64,11 @@ void led_set(struct led_classdev *raw_dev, enum led_brightness brightness)
 	} else {
 		drv_data->led_status &= ~mask;
 	}
-	iowrite8(drv_data->led_status, drv_data->base_ptr + LED_OFFSET);
+	if (drv_data->is_virt32) {
+		iowrite8(drv_data->led_status, drv_data->base_ptr + LED_OFFSET);
+	} else {
+		display_led(data->led_no, brightness);
+	}
 }
 #if 0
 
@@ -78,18 +87,33 @@ static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 
 static int access_probe(struct platform_device *pdev)
 {
-	int i, ret;
+	struct device_node *dt_node;
+	const char *platform_type;
+	struct vext_data *priv;
 	struct resource *iores;
-	struct vext_data *priv = kzalloc(sizeof(struct vext_data), GFP_KERNEL);
+	int i, ret;
+
+	priv = kzalloc(sizeof(struct vext_data), GFP_KERNEL);
 	BUG_ON(!priv);
 
 	platform_set_drvdata(pdev, priv);
 
-	iores = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	BUG_ON(!iores);
+	dt_node = of_find_node_by_name(NULL, DEVICE_NAME);
+	BUG_ON(!dt_node);
 
-	priv->base_ptr = ioremap(iores->start, iores->end - iores->start + 1);
-	BUG_ON(!priv->base_ptr);
+	ret = of_property_read_string(dt_node, "platform_type", &platform_type);
+	BUG_ON(ret);
+
+	priv->is_virt32 = strcmp(platform_type, "virt32") == 0;
+
+	if (priv->is_virt32) {
+		iores = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+		BUG_ON(!iores);
+
+		priv->base_ptr =
+			ioremap(iores->start, iores->end - iores->start + 1);
+		BUG_ON(!priv->base_ptr);
+	}
 
 #if 0
 	irq = platform_get_irq(pdev, 0);
@@ -110,19 +134,9 @@ static int access_probe(struct platform_device *pdev)
 		ret = led_classdev_register(&pdev->dev, &priv->leds[i].cdev);
 		BUG_ON(ret);
 	}
-#if 0
-	printk("Turning LEDS 1-4 ON\n");
-	writeb(0x1E, priv->base_ptr + LED_OFFSET);
-	//enable interrupts
-	printk("Enabling interrupts\n");
-	writeb(0x80, priv->base_ptr + IRQ_CTRL_REG_OFFSET);
-#endif
-#if 0
-	rpisense_init();
-	for (i = 0; i < 5; i += 2) {
-		display_led(i, 1);
+	if (!priv->is_virt32) {
+		rpisense_init();
 	}
-#endif
 
 	return 0;
 }
