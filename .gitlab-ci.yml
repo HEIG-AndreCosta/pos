@@ -1,0 +1,37 @@
+stages:
+  - build
+  - upload
+
+variables:
+  # Define the rootfs path with unique identifiers for each namespace/project
+  ROOTFS_PATH: "/mnt/gitlab-rootfs/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
+
+pos:
+  stage: build
+  script:
+    - echo "Creating persistent directory on the runner host at $ROOTFS_PATH"
+    - mkdir -p "$ROOTFS_PATH"  # Creates directory on the host, ensuring persistency
+    - wget https://gitlab.com/dre-reds/pos24/-/raw/main/Dockerfile?ref_type=heads -O Dockerfile
+    - docker build . -t pos24  # Build Docker image using the host's Docker daemon
+    - container_id=$(docker create pos24)
+    - docker run -t --mount type=bind,source="$ROOTFS_PATH",target=/root/pos24-main/rootfs pos24
+    - echo "Copying file from the Docker image..."
+    - docker cp "$container_id:/root/pos24-main/rootfs/board/virt32/rootfs.cpio" "$ROOTFS_PATH/rootfs.cpio"
+    - if [ ! -f "$ROOTFS_PATH/rootfs.cpio" ]; then echo "rootfs.cpio not found!"; exit 1; fi
+  artifacts:
+    paths:
+      - "$ROOTFS_PATH/rootfs.cpio"  # Artifact paths remain accessible between jobs
+  tags:
+    - reds-calculator-gitlab
+
+upload_artifact:
+  stage: upload
+  script:
+    - echo "Uploading rootfs.cpio artifact"
+    - cp "$ROOTFS_PATH/rootfs.cpio" .  # Copies the file to the job's working directory for upload
+  artifacts:
+    paths:
+      - rootfs.cpio
+    expire_in: never
+  tags:
+    - reds-calculator-gitlab
