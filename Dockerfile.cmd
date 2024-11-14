@@ -25,7 +25,7 @@ RUN cd /opt/toolchains && \
 
 WORKDIR /root
 
-RUN wget -q https://gitlab.com/dre-reds/pos24/-/archive/main/pos24-main.tar.gz && \
+RUN wget -q https://gitlab.com/andcost/pos24/-/archive/main/pos24-main.tar.gz && \
     tar xf pos24-main.tar.gz && \
     cd pos24-main/rootfs && \
     wget https://gitlab.com/dre-reds/pos24/-/raw/main/rootfs/rootfs_full.tar && \
