@@ -14,7 +14,7 @@ pos:
     - wget https://gitlab.com/dre-reds/pos24/-/raw/main/Dockerfile?ref_type=heads -O Dockerfile
     - docker build . -t pos24  # Build Docker image using the host's Docker daemon
     - container_id=$(docker create pos24)
-    - docker run -t --mount type=bind,source="$ROOTFS_PATH",target=/root/pos24-main/rootfs pos24
+    - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos24-main/rootfs pos24 sh -c ./build_rootfs.sh 
     - echo "Copying file from the Docker image..."
     - docker cp "$container_id:/root/pos24-main/rootfs/board/virt32/rootfs.cpio" "$ROOTFS_PATH/rootfs.cpio"
     - if [ ! -f "$ROOTFS_PATH/rootfs.cpio" ]; then echo "rootfs.cpio not found!"; exit 1; fi
@@ -22,7 +22,7 @@ pos:
     paths:
       - "$ROOTFS_PATH/rootfs.cpio"  # Artifact paths remain accessible between jobs
   tags:
-    - reds-calculator-gitlab
+    - reds-calculator-gitlab,shell
 
 upload_artifact:
   stage: upload
@@ -34,4 +34,4 @@ upload_artifact:
       - rootfs.cpio
     expire_in: never
   tags:
-    - reds-calculator-gitlab
+    - reds-calculator-gitlab,shell
