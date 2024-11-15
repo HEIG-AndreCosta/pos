@@ -46,6 +46,10 @@ int main(int argc, char **argv)
 	int led_fds[NO_LEDS];
 	int event_fd;
 	char file_path[50];
+	if (argc < 2) {
+		printf("Usage %s <event_file_path>", argv[0]);
+		return EXIT_FAILURE;
+	}
 
 	for (size_t i = 0; i < NO_LEDS; ++i) {
 		sprintf(file_path, BASE_PATH "%zu/" FILE_NAME, i);
@@ -55,9 +59,8 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 	}
-	sprintf(file_path, "/dev/input/event0");
 
-	event_fd = open(file_path, O_RDONLY);
+	event_fd = open(argv[1], O_RDONLY);
 
 	printf("Welcome to Simon!\n");
 
