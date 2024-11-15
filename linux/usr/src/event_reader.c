@@ -18,8 +18,27 @@ int main(int argc, char **argv)
 		if (read(fd, &event, sizeof(event)) == -1) {
 			break;
 		}
-		printf("New event. Type: %d Code: %d Value: %d\n", event.type,
-		       event.code, event.value);
+		if (event.type == EV_KEY && event.value == 1) {
+			printf("New event. Type: %d Code: %d Value: %d ",
+			       event.type, event.code, event.value);
+			switch (event.code) {
+			case KEY_ENTER:
+				printf("KEY_ENTER\n");
+				break;
+			case KEY_UP:
+				printf("KEY_UP\n");
+				break;
+			case KEY_DOWN:
+				printf("KEY_DOWN\n");
+				break;
+			case KEY_LEFT:
+				printf("KEY_LEFT\n");
+				break;
+			case KEY_RIGHT:
+				printf("KEY_RIGHT\n");
+				break;
+			}
+		}
 	}
 	return EXIT_SUCCESS;
 }
