@@ -1,6 +1,22 @@
 
-# Repository ``pos_student`` 
- 
+# POS Repository
+
+## Directories
+
+Here is a description of the main directories of pos repository
+
+```
+
+- linux             : Main directory for all Linux components
+- linux/linux       : Linux kernel source tree
+- linux/usr         : User space applications and modules which will be transfered in the rootfs during the deployment
+- linux/usr/module  : Kernel modules which will be inserted dynamically via insmod
+- rootfs/           : Root tree of rootfs components, including Makefile to build the buildroot based rootfs
+- buildroot         : Source tree of buildroot
+
+
+```
+
 ## Scripts
 
 A set of scripts to manage the Docker container used to create a ``rootfs`` from ``buildroot``
