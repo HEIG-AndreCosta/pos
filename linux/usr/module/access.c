@@ -103,7 +103,26 @@ static irqreturn_t on_switch_press_bottom_half(int irq, void *raw)
 static void joystick_handler(struct platform_device *pdev, int key)
 {
 	struct vext_data *data = platform_get_drvdata(pdev);
-	data->key_pressed_index = key;
+	if (key == 0) {
+		return;
+	}
+	switch (key) {
+	case CENTER:
+		data->key_pressed_index = 0;
+		break;
+	case LEFT:
+		data->key_pressed_index = 1;
+		break;
+	case UP:
+		data->key_pressed_index = 2;
+		break;
+	case RIGHT:
+		data->key_pressed_index = 3;
+		break;
+	case DOWN:
+		data->key_pressed_index = 4;
+		break;
+	}
 	propagate_event(data);
 }
 
