@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 		sequence[round++] = (rand() % (NO_LEDS - 1)) + 1;
 
 		for (int i = 0; i < round; ++i) {
-			int curr_led = sequence[i];
+			const int curr_led = sequence[i];
 			usleep(500000);
 			write(led_fds[curr_led], "1", sizeof("1"));
 			usleep(500000);
@@ -98,8 +98,8 @@ int main(int argc, char **argv)
 		usleep(500000);
 		write(led_fds[0], "0", sizeof("1"));
 		for (int i = 0; i < round; ++i) {
-			int curr_key = keys[sequence[i]];
-			int key_pressed = get_key_pressed(event_fd);
+			const int curr_key = keys[sequence[i]];
+			const int key_pressed = get_key_pressed(event_fd);
 			if (key_pressed == curr_key) {
 				write(led_fds[curr_key], "1", sizeof("1"));
 				usleep(100000);
