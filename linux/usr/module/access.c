@@ -153,10 +153,7 @@ static int access_probe(struct platform_device *pdev)
 			kfree(priv);
 			return ret;
 		}
-	} else {
-		rpisense_joystick_handler_register(pdev, joystick_handler);
 	}
-
 	input_dev->name = DEVICE_NAME "_input";
 	input_dev->dev.parent = &pdev->dev;
 	for (i = 0; i < ARRAY_SIZE(keys); ++i) {
@@ -177,6 +174,7 @@ static int access_probe(struct platform_device *pdev)
 		writeb(0x80, priv->base_ptr + IRQ_CTRL_REG_OFFSET);
 	} else {
 		rpisense_init();
+		rpisense_joystick_handler_register(pdev, joystick_handler);
 	}
 
 	return 0;
