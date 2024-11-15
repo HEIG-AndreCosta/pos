@@ -1,2 +1,2 @@
-docker build . -f Dockerfile.cmd -t pos24 $1
+docker build . -f Dockerfile -t pos24 $1
 

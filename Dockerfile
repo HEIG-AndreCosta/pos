@@ -33,10 +33,6 @@ RUN wget -q https://gitlab.com/dre-reds/pos24/-/archive/main/pos24-main.tar.gz &
 
 WORKDIR /root/pos24-main
 
-CMD cd rootfs && \
-    export PATH=${PATH}:/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin && \
-    make virt32_defconfig && \
-    make -j20
 
 
 
