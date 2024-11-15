@@ -1,8 +1,9 @@
 
-Be careful with the requirements of various configs.
+# Repository ``pos_student`` 
 
-- avz_vt -> ./st must have virtualization on => use ./stv
-- avz_pv -> ./st must have virtualization off => use ./st
+## Scripts
+- dbuild.sh <arg>    Build the container image to build the rootfs based on buildroot
+- drun.sh            Run the container 
 
 
 
