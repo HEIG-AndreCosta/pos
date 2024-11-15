@@ -15,6 +15,7 @@
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/io.h>
+#include <linux/input.h>
 #include <linux/mod_devicetable.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
@@ -38,6 +39,8 @@ const static char *led_names[NO_LEDS] = { "mydev_led0", "mydev_led1",
 					  "mydev_led2", "mydev_led3",
 					  "mydev_led4" };
 
+const static int keys[] = { KEY_ENTER, KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN };
+
 struct led_data {
 	struct led_classdev cdev;
 	int led_no;
@@ -48,6 +51,8 @@ struct vext_data {
 	struct led_data leds[NO_LEDS];
 	uint8_t led_status;
 	bool is_virt32; // It's either virt32 or rpi4
+	struct input_dev *input_dev;
+	uint8_t key_pressed_index;
 };
 
 void led_set(struct led_classdev *raw_dev, enum led_brightness brightness)
@@ -70,20 +75,40 @@ void led_set(struct led_classdev *raw_dev, enum led_brightness brightness)
 		display_led(data->led_no, brightness);
 	}
 }
-#if 0
 
 static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 {
 	struct vext_data *data = (struct vext_data *)raw;
-	uint8_t irq_reg = readb(data->base_ptr + IRQ_CTRL_REG_OFFSET);
+	uint8_t irq_reg = ioread8(data->base_ptr + IRQ_CTRL_REG_OFFSET);
 	uint8_t btn_pressed = (irq_reg & VEXT_IRQ_CTRL_BTN_MASK) >>
 			      VEXT_IRQ_CTRL_BTN_SHIFT;
-
 	writeb(0x81, data->base_ptr + IRQ_CTRL_REG_OFFSET);
-	printk("IRQ Button: %d\n", btn_pressed);
+	if (!btn_pressed) {
+		return IRQ_HANDLED;
+	}
+	data->key_pressed_index = btn_pressed - 1;
+	return IRQ_WAKE_THREAD;
+}
+
+static void propagate_event(struct vext_data *data)
+{
+	input_report_key(data->input_dev, keys[data->key_pressed_index], 1);
+	input_report_key(data->input_dev, keys[data->key_pressed_index], 0);
+	input_sync(data->input_dev);
+}
+
+static irqreturn_t on_switch_press_bottom_half(int irq, void *raw)
+{
+	struct vext_data *data = (struct vext_data *)raw;
+	propagate_event(data);
 	return IRQ_HANDLED;
 }
-#endif
+static void joystick_handler(struct platform_device *pdev, int key)
+{
+	struct vext_data *data = platform_get_drvdata(pdev);
+	data->key_pressed_index = key;
+	propagate_event(data);
+}
 
 static int access_probe(struct platform_device *pdev)
 {
@@ -91,11 +116,15 @@ static int access_probe(struct platform_device *pdev)
 	const char *platform_type;
 	struct vext_data *priv;
 	struct resource *iores;
-	int i, ret;
+	struct input_dev *input_dev;
+	int i, ret, irq;
 
 	priv = kzalloc(sizeof(struct vext_data), GFP_KERNEL);
 	BUG_ON(!priv);
 
+	input_dev = input_allocate_device();
+	BUG_ON(!input_dev);
+	priv->input_dev = input_dev;
 	platform_set_drvdata(pdev, priv);
 
 	dt_node = of_find_node_by_name(NULL, DEVICE_NAME);
@@ -115,17 +144,30 @@ static int access_probe(struct platform_device *pdev)
 		BUG_ON(!priv->base_ptr);
 	}
 
-#if 0
-	irq = platform_get_irq(pdev, 0);
-	printk("Requesting IRQ\n");
-	ret = request_irq(irq, on_switch_press_top_half, IRQF_TRIGGER_HIGH,
-			  DEVICE_NAME, priv);
-	if (ret < 0) {
-		printk("Couldn't request irq\n");
-		kfree(priv);
-		return ret;
+	if (priv->is_virt32) {
+		irq = platform_get_irq(pdev, 0);
+		printk("Requesting IRQ\n");
+		ret = request_threaded_irq(irq, on_switch_press_top_half,
+					   on_switch_press_bottom_half,
+					   IRQF_TRIGGER_HIGH, DEVICE_NAME,
+					   priv);
+		if (ret < 0) {
+			printk("Couldn't request irq\n");
+			kfree(priv);
+			return ret;
+		}
+	} else {
+		rpisense_joystick_handler_register(pdev, joystick_handler);
 	}
-#endif
+
+	input_dev->name = DEVICE_NAME "_input";
+	input_dev->dev.parent = &pdev->dev;
+	for (i = 0; i < ARRAY_SIZE(keys); ++i) {
+		input_set_capability(input_dev, EV_KEY, keys[i]);
+	}
+
+	ret = input_register_device(input_dev);
+	BUG_ON(ret);
 
 	for (i = 0; i < NO_LEDS; ++i) {
 		priv->leds[i].cdev.name = led_names[i];
@@ -134,7 +176,9 @@ static int access_probe(struct platform_device *pdev)
 		ret = led_classdev_register(&pdev->dev, &priv->leds[i].cdev);
 		BUG_ON(ret);
 	}
-	if (!priv->is_virt32) {
+	if (priv->is_virt32) {
+		writeb(0x80, priv->base_ptr + IRQ_CTRL_REG_OFFSET);
+	} else {
 		rpisense_init();
 	}
 
