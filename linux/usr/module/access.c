@@ -83,10 +83,7 @@ static irqreturn_t on_switch_press_top_half(int irq, void *raw)
 	uint8_t btn_pressed = (irq_reg & VEXT_IRQ_CTRL_BTN_MASK) >>
 			      VEXT_IRQ_CTRL_BTN_SHIFT;
 	writeb(0x81, data->base_ptr + IRQ_CTRL_REG_OFFSET);
-	if (!btn_pressed) {
-		return IRQ_HANDLED;
-	}
-	data->key_pressed_index = btn_pressed - 1;
+	data->key_pressed_index = btn_pressed;
 	return IRQ_WAKE_THREAD;
 }
 
