@@ -204,7 +204,7 @@ static int access_remove(struct platform_device *pdev)
 	if (!priv) {
 		return 0;
 	}
-	kfree(priv->base_ptr);
+	kfree(priv);
 	return 0;
 }
 static const struct of_device_id access_of_ids[] = { { .compatible =
