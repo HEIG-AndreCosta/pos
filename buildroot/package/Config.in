@@ -2133,7 +2133,6 @@ menu "Miscellaneous"
 	source "package/wine/Config.in"
 	source "package/xmrig/Config.in"
 	source "package/xutil_util-macros/Config.in"
-	source "package/vext/Config.in"
 endmenu
 
 menu "Networking applications"
