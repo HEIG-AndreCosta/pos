@@ -209,6 +209,7 @@ static int access_remove(struct platform_device *pdev)
 		led_classdev_unregister(&priv->leds[i].cdev);
 	}
 	input_unregister_device(priv->input_dev);
+	input_free_device(priv->input_dev);
 	if (priv->is_virt32) {
 		ioport_unmap(priv->base_ptr);
 		free_irq(platform_get_irq(pdev, 0), priv);
