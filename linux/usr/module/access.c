@@ -211,6 +211,7 @@ static int access_remove(struct platform_device *pdev)
 	input_unregister_device(priv->input_dev);
 	input_free_device(priv->input_dev);
 	if (priv->is_virt32) {
+		writeb(0x00, priv->base_ptr + IRQ_CTRL_REG_OFFSET);
 		ioport_unmap(priv->base_ptr);
 		free_irq(platform_get_irq(pdev, 0), priv);
 	}
