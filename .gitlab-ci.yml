@@ -3,6 +3,9 @@ stages:
   - upload
 
 variables:
+  CONTAINER_NAME: "pos_container"
+  URL_ORIGIN: "https://gitlab.com/dre-reds/pos_student"
+
   # Define the rootfs path with unique identifiers for each namespace/project
   ROOTFS_PATH: "/mnt/gitlab-rootfs/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
 
@@ -10,17 +13,13 @@ pos:
   stage: build
   script:
     - echo "Creating persistent directory on the runner host at $ROOTFS_PATH"
-    - mkdir -p "$ROOTFS_PATH"  # Creates directory on the host, ensuring persistency
-    - wget https://gitlab.com/dre-reds/pos24/-/raw/main/Dockerfile?ref_type=heads -O Dockerfile
-    - docker build . -t pos24  # Build Docker image using the host's Docker daemon
-    - container_id=$(docker create pos24)
-    - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos24-main/rootfs pos24 sh -c ./build_rootfs.sh 
+    - mkdir -p "$ROOTFS_PATH"   
+    - wget "$URL_ORIGIN"/-/raw/main/Dockerfile?ref_type=heads -O Dockerfile
+    - docker build . -t "$CONTAINER_NAME"
+    - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos/rootfs "$CONTAINER_NAME" sh -c ./build_rootfs.sh 
     - echo "Copying file from the Docker image..."
-    - docker cp "$container_id:/root/pos24-main/rootfs/board/virt32/rootfs.cpio" "$ROOTFS_PATH/rootfs.cpio"
-    - if [ ! -f "$ROOTFS_PATH/rootfs.cpio" ]; then echo "rootfs.cpio not found!"; exit 1; fi
-  artifacts:
-    paths:
-      - "$ROOTFS_PATH/rootfs.cpio"  # Artifact paths remain accessible between jobs
+    - docker run --rm -v "$(pwd):/mnt/host" -t --mount source=rootfs,target=/root/pos/rootfs "$CONTAINER_NAME" sh -c "cp /root/pos/rootfs/board/virt32/rootfs.cpio /mnt/host/"
+    - cp rootfs.cpio "$ROOTFS_PATH"
   tags:
     - reds-calculator-gitlab,shell
 
@@ -28,7 +27,7 @@ upload_artifact:
   stage: upload
   script:
     - echo "Uploading rootfs.cpio artifact"
-    - cp "$ROOTFS_PATH/rootfs.cpio" .  # Copies the file to the job's working directory for upload
+    - cp "$ROOTFS_PATH"/rootfs.cpio .
   artifacts:
     paths:
       - rootfs.cpio
