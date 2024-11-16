@@ -201,8 +201,17 @@ static int access_probe(struct platform_device *pdev)
 static int access_remove(struct platform_device *pdev)
 {
 	struct vext_data *priv = (struct vext_data *)platform_get_drvdata(pdev);
+	int i;
 	if (!priv) {
 		return 0;
+	}
+	for (i = 0; i < NO_LEDS; ++i) {
+		led_classdev_unregister(&priv->leds[i].cdev);
+	}
+	input_unregister_device(priv->input_dev);
+	if (priv->is_virt32) {
+		ioport_unmap(priv->base_ptr);
+		free_irq(platform_get_irq(pdev, 0), priv);
 	}
 	kfree(priv);
 	return 0;
