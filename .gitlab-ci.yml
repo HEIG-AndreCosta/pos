@@ -15,7 +15,7 @@ pos:
   script:
     - echo "Creating persistent directory on the runner host at $ROOTFS_PATH"
     - mkdir -p $ROOTFS_PATH  
-    - wget $URL_ORIGIN/$REPOSITORY/-/raw/main/Dockerfile?ref_type=heads -O Dockerfile
+    - wget $URL_ORIGIN/$REPOSITORY/-/raw/main/Dockerfile?ref_type=heads&inline=false
     - docker build . -t $CONTAINER_NAME
     - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos/rootfs $CONTAINER_NAME sh -c ./build_rootfs.sh 
     - echo "Copying file from the Docker image..."
