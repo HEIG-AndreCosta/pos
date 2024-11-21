@@ -14,15 +14,16 @@ pos:
   stage: build
   script:
     - echo "Creating persistent directory on the runner host at $ROOTFS_PATH"
-    - mkdir -p $ROOTFS_PATH  
+    - mkdir -p $ROOTFS_PATH
     - wget $URL_ORIGIN/$REPOSITORY/-/raw/main/Dockerfile?ref_type=heads&inline=false
     - docker build . -t $CONTAINER_NAME
-    - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos/rootfs $CONTAINER_NAME sh -c ./build_rootfs.sh 
+    - docker run --privileged -t --mount source=rootfs,target=/root/pos24-main/rootfs $CONTAINER_NAME sh -c "cd ../ && tar xf pos24-main.tar.gz"
+    - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos24-main/rootfs $CONTAINER_NAME sh -c ./build_rootfs.sh
     - echo "Copying file from the Docker image..."
-    - docker run --rm -v "$(pwd):/mnt/host" -t --mount source=rootfs,target=/root/pos/rootfs $CONTAINER_NAME sh -c "cp /root/pos/rootfs/board/virt32/rootfs.cpio /mnt/host/"
+    - docker run --rm -v "$(pwd):/mnt/host" -t --mount source=rootfs,target=/root/pos24-main/rootfs $CONTAINER_NAME sh -c "cp /root/pos24-main/rootfs/board/virt32/rootfs.cpio /mnt/host/"
     - cp rootfs.cpio $ROOTFS_PATH
   tags:
-    - reds-calculator-gitlab,shell
+    - runners-server,shell
 
 upload_artifact:
   stage: upload
@@ -34,4 +35,4 @@ upload_artifact:
       - rootfs.cpio
     expire_in: never
   tags:
-    - reds-calculator-gitlab,shell
+    - runners-server,shell
