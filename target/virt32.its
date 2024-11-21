@@ -26,7 +26,6 @@
 		linux {
 			description = "Linux kernel";
 			data = /incbin/("../linux/linux/build/virt32/arch/arm/boot/Image");
-			/* type = "avz" */
 			type = "kernel";
 			arch = "arm";
 			os = "linux";
