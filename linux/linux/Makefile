@@ -127,7 +127,13 @@ export quiet Q KBUILD_VERBOSE
 # The O= assignment takes precedence over the KBUILD_OUTPUT environment
 # variable.
 
-KBUILD_OUTPUT := build/$(PLATFORM)
+# Do we want to change the working directory?
+ifeq ("$(origin O)", "command line")
+  KBUILD_OUTPUT := $(O)
+else
+  KBUILD_OUTPUT := build/$(PLATFORM)
+endif
+
 
 ifneq ($(KBUILD_OUTPUT),)
 # Make's built-in functions such as $(abspath ...), $(realpath ...) cannot

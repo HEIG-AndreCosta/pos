@@ -40,6 +40,7 @@ endif
 undefine MK_ARCH
 
 include ../build.conf
+$(info *********** Running for $(PLATFORM) *********)
 
 # Avoid funny character set dependencies
 unexport LC_ALL
@@ -143,7 +144,12 @@ ifeq ($(KBUILD_SRC),)
 
 # OK, Make called in directory where kernel src resides
 # Do we want to locate output files in a separate directory?
-KBUILD_OUTPUT := build/$(PLATFORM)
+ifeq ("$(origin O)", "command line")
+  KBUILD_OUTPUT := $(O)
+else
+  KBUILD_OUTPUT := build/$(PLATFORM)
+endif
+
 
 # That's our default target when none is given on the command line
 PHONY := _all

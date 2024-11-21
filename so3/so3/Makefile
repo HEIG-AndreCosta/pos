@@ -10,6 +10,7 @@ abs_srctree := $(realpath $(dir $(this-makefile)))
 abs_objtree := $(CURDIR)
 
 include $(abs_srctree)/../../build.conf
+$(info *********** Running for $(PLATFORM) *********)
 
 # Do not:
 # o  use make's built-in rules and variables
@@ -52,7 +53,12 @@ ifeq ($(KBUILD_SRC),)
 
 # OK, Make called in directory where kernel src resides
 # Do we want to locate output files in a separate directory?
-KBUILD_OUTPUT := build/$(PLATFORM)/
+ifeq ("$(origin O)", "command line")
+  KBUILD_OUTPUT := $(O)/
+else
+  KBUILD_OUTPUT := build/$(PLATFORM)/
+endif
+
 
 ifeq ("$(origin W)", "command line")
   export KBUILD_ENABLE_EXTRA_GCC_CHECKS := $(W)
