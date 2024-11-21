@@ -28,7 +28,7 @@ GDB_PORT=$(($GDB_PORT_BASE + $N_QEMU_INSTANCES))
 	-device virtio-blk-device,drive=hd0 \
 	-drive if=none,file=filesystem/sdcard.img.virt64,id=hd0,format=raw,file.locking=off \
 	-m 1024 \
-	-kernel u-boot/u-boot \
+	-kernel u-boot/build/virt64/u-boot \
 	-nographic \
 	-netdev tap,id=n1,script=scripts/qemu-ifup.sh,downscript=scripts/qemu-ifdown.sh \
 	-device virtio-net-device,netdev=n1,mac=${QEMU_MAC_ADDR} \

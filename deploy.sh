@@ -90,7 +90,7 @@ if [ "$deploy_boot" == "y" ]; then
 
     if [ "$PLATFORM" == "rpi4_64" ]; then
         sudo cp -r ../bsp/rpi4/* fs/
-        sudo cp ../u-boot/u-boot.bin fs/kernel8.img
+        sudo cp ../u-boot/build/rpi4_64/u-boot.bin fs/kernel8.img
         ./umount.sh
         cd ..
     fi
