@@ -125,6 +125,16 @@
 		status = "ok";
 	};
 
+	vext{
+		compatible = "pos,vext";
+		status = "ok";
+		reg = <0x20000000 0x1000>;
+#if 0
+		platform_type = "virt32";
+		interrupts = <0 50 4>; // 0 for spi, 50 for irq number, 4 for high level interrupt
+#endif
+	};
+
 	/* PL111 Color LCD Controller
 	 *   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0293c/index.html
 	 */
