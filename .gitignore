@@ -22,3 +22,17 @@ qemu/scripts/tracetool/format/__pycache__/
 *.symvers
 u-boot/drivers/video/u_boot_logo.S
 *.order
+*.d
+so3/so3/include/config
+so3/so3/include/generated
+*.a
+so3/so3/scripts/kconfig/lex.zconf.c
+so3/so3/scripts/kconfig/zconf.hash.c
+so3/so3/scripts/kconfig/zconf.tab.c
+so3/usr/build
+so3/usr/lib/libc/include/asm
+so3/so3/arch/arm32/asm-offsets.s
+so3/so3/.config
+so3/so3/.config.old
+*.dtb
+*.bin
