@@ -26,18 +26,18 @@
 #include "qemu/module.h"
 #include "json/cjson.h"
 
-
-
-
 /* Debug output configuration #define or #undef */
 #define VEXT_EMUL_DEBUG 0
 
-#ifdef VEXT_EMUL_DEBUG
-#define DBG(fmt, ...) \
-do { printf("(qemu)vext: " fmt , ## __VA_ARGS__); } while (0)
+#if VEXT_EMUL_DEBUG
+#define DBG(fmt, ...)                                      \
+	do {                                               \
+		printf("(qemu)vext: " fmt, ##__VA_ARGS__); \
+	} while (0)
 #else
 #define DBG(fmt, ...) \
-do { } while (0)
+	do {          \
+	} while (0)
 #endif
 
 #endif /* VEXT_H */
