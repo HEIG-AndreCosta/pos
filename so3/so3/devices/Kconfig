@@ -19,6 +19,9 @@ config FB
 
 config INPUT
 	bool "Input device support"
+
+config VEXT
+	bool "vext support for academic purposes"
 	
 source "devices/serial/Kconfig"
 source "devices/mmc/Kconfig"
