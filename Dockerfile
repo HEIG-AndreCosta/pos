@@ -25,16 +25,6 @@ RUN cd /opt/toolchains && \
 
 WORKDIR /root
 
-ADD https://reds-gitlab.heig-vd.ch/reds-public/pos24/-/archive/main/pos24-main.tar.gz /root
+COPY . /root/pos24
 
-RUN tar xf pos24-main.tar.gz
-
-WORKDIR /root/pos24-main
-
-
-
-
-
-
-
-
+WORKDIR /root/pos24
