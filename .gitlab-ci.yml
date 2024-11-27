@@ -4,7 +4,7 @@ stages:
 
 variables:
   CONTAINER_NAME: "pos_container"
-  URL_ORIGIN: "https://gitlab.com/andcost/pos24"
+  URL_ORIGIN: "https://gitlab.com/andcost"
   REPOSITORY: "pos24"
 
   # Define the rootfs path with unique identifiers for each namespace/project
