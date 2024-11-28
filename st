@@ -17,7 +17,8 @@ GDB_PORT=$(($GDB_PORT_BASE + $N_QEMU_INSTANCES))
         if [ "$var" != "" ]; then
                 export $(echo $var | sed -e 's/ //g' -e /^$/d -e 's/://g' -e /^#/d)
         fi
-    done < build.conf
+    # The following wizard ensure there is a final return line as read need it
+    done < <(cat build.conf; echo)
 
     if [ "$PLATFORM" == "virt64" ]; then
 	echo Starting on ARM64

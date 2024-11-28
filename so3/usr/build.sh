@@ -30,7 +30,8 @@ while read var; do
 if [ "$var" != "" ]; then
   export $(echo $var | sed -e 's/ //g' -e /^$/d -e 's/://g' -e /^#/d)
 fi
-done < ../../build.conf
+# The following wizard ensure there is a final return line as read need it
+done < <(cat ../../build.conf; echo)
 
 echo Platform is ${PLATFORM}
 

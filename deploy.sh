@@ -40,7 +40,8 @@ while read var; do
 if [ "$var" != "" ]; then
   export $(echo $var | sed -e 's/ //g' -e /^$/d -e 's/://g' -e /^#/d)
 fi
-done < build.conf
+# The following wizard ensure there is a final return line as read need it
+done < <(cat build.conf; echo)
 
 # We now have ${PLATFORM} which names the platform base
 # and ${PLATFORM_TYPE} to be used when the type is required.
@@ -51,6 +52,10 @@ if [ "$PLATFORM" != "virt32" -a "$PLATFORM" != "virt64" ]; then
     read devname
     export devname="$devname"
 fi
+
+cd filesystem
+./umount.sh
+cd ../
 
 if [ "$deploy_usr_so3" == "y" ]; then
 
@@ -110,4 +115,5 @@ if [ "$deploy_usr" == "y" ]; then
     # Only for Linux
     cd linux/usr
     ./deploy.sh
+    cd ../..
 fi
