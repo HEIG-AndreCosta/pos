@@ -23,9 +23,9 @@ RUN cd /opt/toolchains && \
     rm gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf.tar.xz && \
     echo export PATH=${PATH}:/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin >> /root/.bashrc
 
-COPY . /root/pos24
+COPY . /root/pos
 
-WORKDIR /root/pos24
+WORKDIR /root/pos
 
 
 
