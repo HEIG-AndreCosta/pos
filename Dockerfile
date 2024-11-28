@@ -23,13 +23,9 @@ RUN cd /opt/toolchains && \
     rm gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf.tar.xz && \
     echo export PATH=${PATH}:/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin >> /root/.bashrc
 
-WORKDIR /root
+COPY . /root/pos24
 
-ADD https://reds-gitlab.heig-vd.ch/reds-public/pos24/-/archive/main/pos24-main.tar.gz /root
-
-RUN tar xf pos24-main.tar.gz
-
-WORKDIR /root/pos24-main
+WORKDIR /root/pos24
 
 
 
