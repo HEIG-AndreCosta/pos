@@ -1,4 +1,5 @@
 stages:
+  - prepare
   - build
   - upload
 
@@ -36,3 +37,12 @@ upload_artifact:
     expire_in: never
   tags:
     - runners-server,shell
+
+clean:
+  stage: prepare
+  script:
+    - docker run --rm -v "$(pwd):/mnt/host" -t --mount source=rootfs,target=/root/pos24-main/rootfs $CONTAINER_NAME sh -c "rm -rf /root/pos24-main/rootfs/*"
+  when: manual
+  tags:
+    - runners-server,shell
+  
