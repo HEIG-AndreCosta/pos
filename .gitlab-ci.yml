@@ -16,6 +16,7 @@ pos:
     - mkdir -p $ROOTFS_PATH
     - docker build . -t $CONTAINER_NAME
     - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos24/rootfs $CONTAINER_NAME sh -c ./build_rootfs.sh
+    - docker run --privileged -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" --mount source=rootfs,target=/root/pos/rootfs $CONTAINER_NAME sh -c ./build_rootfs.sh
     - echo "Copying file from the Docker image..."
     - docker run --rm -v "$(pwd):/mnt/host" -t --mount source=rootfs,target=/root/pos24/rootfs $CONTAINER_NAME sh -c "cp /root/pos24/rootfs/board/virt32/rootfs.cpio /mnt/host/"
     - cp rootfs.cpio $ROOTFS_PATH
