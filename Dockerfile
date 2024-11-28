@@ -28,6 +28,6 @@ WORKDIR /root
 COPY . /root/pos24
 RUN wget https://reds-gitlab.heig-vd.ch/reds-public/pos_rootfs/-/archive/master/pos_rootfs-master.tar.gz
 RUN tar xf pos_rootfs-master.tar.gz
-RUN rm /root/pos24/rootfs
+RUN rm -rf /root/pos24/rootfs
 RUN mv pos_rootfs-master /root/pos24/rootfs
 WORKDIR /root/pos24
