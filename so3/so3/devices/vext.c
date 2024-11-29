@@ -79,7 +79,7 @@ static int vext_read(int fd, void *buffer, int count)
 static struct file_operations vext_fops = { .write = vext_write,
 					    .read = vext_read };
 
-static struct devclass vext_dev = {
+static struct devclass vext_led_dev = {
 	.class = "vextled",
 	.id_start = 0,
 	.id_end = 4,
@@ -107,8 +107,8 @@ int vext_init(dev_t *dev, int fdt_offset)
 	BUG_ON(!priv);
 
 	/* Register the mydev driver so it can be accessed from user space. */
-	devclass_register(dev, &vext_dev);
-	devclass_set_priv(&vext_dev, priv);
+	devclass_register(dev, &vext_led_dev);
+	devclass_set_priv(&vext_led_dev, priv);
 
 	prop = fdt_get_property(__fdt_addr, fdt_offset, "reg", &prop_len);
 	BUG_ON(!prop);
