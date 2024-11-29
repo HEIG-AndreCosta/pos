@@ -14,7 +14,12 @@ sync -f fs
 
 if [ "$PLATFORM" == "virt32" -o "$PLATFORM" == "virt64" ]; then
     devpaths=$(losetup --associated sdcard.img.$PLATFORM --output NAME --noheadings)
-    devname=$(echo $devpaths | sed 's/\/dev\///g')
+    devname=$(echo $devpaths | sed 's/\/dev\/\(.*\)/\1/g')
+
+    if [ "$devpaths" == "" ]; then
+        # The image isn't mounted
+        exit 0
+    fi
 fi
 
 if [ "$devname" == "" ]; then
@@ -24,9 +29,9 @@ if [ "$devname" == "" ]; then
     devpaths="/dev/$devname"
 fi
 
-mounted_dev=$(mount -l | grep -E "/dev/($(echo $devname | sed 's/ /|/g'))p" | sed -n 's/^\(\/dev\/[^ ]*\).*$/\1/p')
+devname=$(echo $devname | sed 's/\([^ ]*[0-9]\)/\1p/g')
 
-if [ "$mounted_dev" != "" ]; then
+while mounted_dev=$(mount -l | grep -E "/dev/($(echo $devname | sed 's/ /|/g'))" | sed -n 's/^\(\/dev\/[^ ]*\).*$/\1/p') && [ "$mounted_dev" != "" ]; do
     # Ensure that nothing is using a file in mounted device
     while lsof +f -- ${mounted_dev}; do
         echo "Waiting for target to be unbusy"
@@ -34,7 +39,7 @@ if [ "$mounted_dev" != "" ]; then
     done
 
     sudo umount ${mounted_dev}
-fi
+done
 
 if [ "$PLATFORM" == "virt32" -o "$PLATFORM" == "virt64" ]; then
     sudo losetup --detach $devpaths

@@ -26,6 +26,8 @@ if [ "$1" == "rpi4" -o "$1" == "rpi4_64" ]; then
     read devname
 fi
 
+export devname=$devname
+./umount.sh $1
 
 if [ "$1" == "virt32" -o "$1" == "rpi4" -o "$1" == "rpi4_64" -o "$1" == "virt64" ]; then
 # Create the partition layout this way
