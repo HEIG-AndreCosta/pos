@@ -34,7 +34,7 @@ struct vext_data {
 	uint8_t led_status;
 };
 
-static int vext_write(int fd, const void *buffer, int count)
+static int vext_led_write(int fd, const void *buffer, int count)
 {
 	struct devclass *dev;
 	struct vext_data *priv;
@@ -57,7 +57,7 @@ static int vext_write(int fd, const void *buffer, int count)
 	return 2;
 }
 
-static int vext_read(int fd, void *buffer, int count)
+static int vext_led_read(int fd, void *buffer, int count)
 {
 	struct devclass *dev;
 	struct vext_data *priv;
@@ -76,8 +76,8 @@ static int vext_read(int fd, void *buffer, int count)
 	return 2;
 }
 
-static struct file_operations vext_led_fops = { .write = vext_write,
-						.read = vext_read };
+static struct file_operations vext_led_fops = { .write = vext_led_write,
+						.read = vext_led_read };
 
 static struct devclass vext_led_dev = {
 	.class = "vextled",
