@@ -22,6 +22,7 @@
 #include "completion.h"
 #include "device/device.h"
 #include "device/fdt.h"
+#include "device/irq.h"
 #include "heap.h"
 #include "libfdt/libfdt.h"
 #include "memory.h"
@@ -41,7 +42,30 @@ struct vext_data {
 	uint8_t key_index;
 };
 
+#define VEXT_IRQ_CTRL_BTN_MASK	(0xE)
+#define VEXT_IRQ_CTRL_BTN_SHIFT (0x1)
+
 const static int KEYS[] = { KEY_ENTER, KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN };
+
+static irq_return_t irq_handler(int irq, void *data)
+{
+	struct vext_data *priv = (struct vext_data *)data;
+	uint8_t irq_reg = ioread8(priv->base_addr + priv->irqctrl_offset);
+	uint8_t btn_pressed = (irq_reg & VEXT_IRQ_CTRL_BTN_MASK) >>
+			      VEXT_IRQ_CTRL_BTN_SHIFT;
+
+	iowrite8(priv->base_addr + priv->irqctrl_offset, 0x81);
+	priv->key_index = btn_pressed;
+	complete(&priv->sw_read_cplt);
+	printk("IRQ Handler %x\n", btn_pressed);
+	return IRQ_BOTTOM;
+}
+static irq_return_t irq_differed_handler(int irq, void *data)
+{
+	printk("Differed IRQ Handler\n");
+	return IRQ_COMPLETED;
+}
+
 static int vext_led_write(int fd, const void *buffer, int count)
 {
 	struct devclass *dev;
@@ -158,15 +182,25 @@ int vext_init(dev_t *dev, int fdt_offset)
 	priv->base_addr =
 		(void *)io_map(fdt32_to_cpu(((const fdt32_t *)prop->data)[0]),
 			       fdt32_to_cpu(((const fdt32_t *)prop->data)[1]));
+
 	BUG_ON(!priv->base_addr);
+
 	priv->led_offset = vext_get_register_offset(fdt_offset, "led");
 	priv->sw_offset = vext_get_register_offset(fdt_offset, "switch");
 	priv->irqctrl_offset = vext_get_register_offset(fdt_offset, "irqctrl");
+
 	devclass_register(dev, &vext_led_dev);
 	devclass_register(dev, &vext_switch_dev);
+
 	devclass_set_priv(&vext_led_dev, priv);
 	devclass_set_priv(&vext_switch_dev, priv);
+
+	fdt_interrupt_node(fdt_offset, &irq);
+
 	init_completion(&priv->sw_read_cplt);
+	irq_bind(irq.irqnr, irq_handler, irq_differed_handler, priv);
+	iowrite8(priv->base_addr + priv->irqctrl_offset, 0x80);
+
 	return 0;
 }
 
