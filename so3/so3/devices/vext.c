@@ -21,7 +21,9 @@
 #include "common.h"
 #include "completion.h"
 #include "device/device.h"
+#include "device/fdt.h"
 #include "heap.h"
+#include "libfdt/libfdt.h"
 #include "memory.h"
 #include <vfs.h>
 
@@ -29,11 +31,12 @@
 #include <asm/io.h>
 #include <device/driver.h>
 
-#define LED_OFFSET 0x3A
-
 struct vext_data {
 	void *base_addr;
 	uint8_t led_status;
+	uint32_t led_offset;
+	uint32_t sw_offset;
+	uint32_t irqctrl_offset;
 	completion_t sw_read_cplt;
 	uint8_t key_index;
 };
@@ -58,7 +61,7 @@ static int vext_led_write(int fd, const void *buffer, int count)
 		priv->led_status |= mask;
 	}
 
-	iowrite8(priv->base_addr + LED_OFFSET, priv->led_status);
+	iowrite8(priv->base_addr + priv->led_offset, priv->led_status);
 	return 2;
 }
 
@@ -120,6 +123,15 @@ static struct devclass vext_switch_dev = {
 	.type = VFS_TYPE_DEV_CHAR,
 	.fops = &vext_switch_fops,
 };
+
+static uint32_t vext_get_register_offset(int fdt_offset, const char *node_name)
+{
+	uint32_t value;
+	fdt_offset = fdt_find_node_by_name(__fdt_addr, fdt_offset, node_name);
+	BUG_ON(fdt_offset < 0);
+	fdt_property_read_u32(__fdt_addr, fdt_offset, "reg", &value);
+	return value;
+}
 int vext_init(dev_t *dev, int fdt_offset)
 {
 	/*
@@ -134,6 +146,7 @@ int vext_init(dev_t *dev, int fdt_offset)
 	struct vext_data *priv;
 	const struct fdt_property *prop;
 	int prop_len;
+	irq_def_t irq;
 
 	printk("Vext Init\n");
 	priv = (struct vext_data *)malloc(sizeof(*priv));
@@ -146,6 +159,9 @@ int vext_init(dev_t *dev, int fdt_offset)
 		(void *)io_map(fdt32_to_cpu(((const fdt32_t *)prop->data)[0]),
 			       fdt32_to_cpu(((const fdt32_t *)prop->data)[1]));
 	BUG_ON(!priv->base_addr);
+	priv->led_offset = vext_get_register_offset(fdt_offset, "led");
+	priv->sw_offset = vext_get_register_offset(fdt_offset, "switch");
+	priv->irqctrl_offset = vext_get_register_offset(fdt_offset, "irqctrl");
 	devclass_register(dev, &vext_led_dev);
 	devclass_register(dev, &vext_switch_dev);
 	devclass_set_priv(&vext_led_dev, priv);
