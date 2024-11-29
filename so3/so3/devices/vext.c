@@ -76,15 +76,15 @@ static int vext_read(int fd, void *buffer, int count)
 	return 2;
 }
 
-static struct file_operations vext_fops = { .write = vext_write,
-					    .read = vext_read };
+static struct file_operations vext_led_fops = { .write = vext_write,
+						.read = vext_read };
 
 static struct devclass vext_led_dev = {
 	.class = "vextled",
 	.id_start = 0,
 	.id_end = 4,
 	.type = VFS_TYPE_DEV_CHAR,
-	.fops = &vext_fops,
+	.fops = &vext_led_fops,
 };
 
 int vext_init(dev_t *dev, int fdt_offset)
