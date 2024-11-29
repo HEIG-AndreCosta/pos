@@ -1,0 +1,3 @@
+[submodule "rootfs"]
+	path = rootfs
+	url = https://reds-gitlab.heig-vd.ch/reds-public/pos_rootfs
