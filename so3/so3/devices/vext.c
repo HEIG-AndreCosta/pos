@@ -19,11 +19,13 @@
 /* Vext Driver */
 
 #include "common.h"
+#include "completion.h"
 #include "device/device.h"
 #include "heap.h"
 #include "memory.h"
 #include <vfs.h>
 
+#include <uapi/linux/input.h>
 #include <asm/io.h>
 #include <device/driver.h>
 
@@ -32,8 +34,11 @@
 struct vext_data {
 	void *base_addr;
 	uint8_t led_status;
+	completion_t sw_read_cplt;
+	uint8_t key_index;
 };
 
+const static int KEYS[] = { KEY_ENTER, KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN };
 static int vext_led_write(int fd, const void *buffer, int count)
 {
 	struct devclass *dev;
@@ -76,6 +81,27 @@ static int vext_led_read(int fd, void *buffer, int count)
 	return 2;
 }
 
+static int vext_switch_read(int fd, void *buffer, int count)
+{
+	struct devclass *dev;
+	struct vext_data *priv;
+	struct input_event input;
+	printk("Vext Switch Read\n");
+	if (count < sizeof(input)) {
+		return 0;
+	}
+	dev = devclass_by_fd(fd);
+	priv = (struct vext_data *)devclass_get_priv(dev);
+
+	wait_for_completion(&priv->sw_read_cplt);
+
+	input.type = EV_KEY;
+	input.code = KEYS[priv->key_index];
+	input.value = 1;
+	memcpy(buffer, (void *)&input, sizeof(input));
+	return sizeof(input);
+}
+
 static struct file_operations vext_led_fops = { .write = vext_led_write,
 						.read = vext_led_read };
 
@@ -87,6 +113,13 @@ static struct devclass vext_led_dev = {
 	.fops = &vext_led_fops,
 };
 
+static struct file_operations vext_switch_fops = { .read = vext_switch_read };
+
+static struct devclass vext_switch_dev = {
+	.class = "vextswitch",
+	.type = VFS_TYPE_DEV_CHAR,
+	.fops = &vext_switch_fops,
+};
 int vext_init(dev_t *dev, int fdt_offset)
 {
 	/*
@@ -117,6 +150,7 @@ int vext_init(dev_t *dev, int fdt_offset)
 		(void *)io_map(fdt32_to_cpu(((const fdt32_t *)prop->data)[0]),
 			       fdt32_to_cpu(((const fdt32_t *)prop->data)[1]));
 	BUG_ON(!priv->base_addr);
+	init_completion(&priv->sw_read_cplt);
 	return 0;
 }
 
