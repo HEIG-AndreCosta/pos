@@ -139,17 +139,17 @@ int vext_init(dev_t *dev, int fdt_offset)
 	priv = (struct vext_data *)malloc(sizeof(*priv));
 	BUG_ON(!priv);
 
-	/* Register the mydev driver so it can be accessed from user space. */
-	devclass_register(dev, &vext_led_dev);
-	devclass_set_priv(&vext_led_dev, priv);
-
 	prop = fdt_get_property(__fdt_addr, fdt_offset, "reg", &prop_len);
 	BUG_ON(!prop);
-	BUG_ON(prop_len != 2 * sizeof(unsigned long));
+	BUG_ON(prop_len != 2 * sizeof(uint32_t));
 	priv->base_addr =
 		(void *)io_map(fdt32_to_cpu(((const fdt32_t *)prop->data)[0]),
 			       fdt32_to_cpu(((const fdt32_t *)prop->data)[1]));
 	BUG_ON(!priv->base_addr);
+	devclass_register(dev, &vext_led_dev);
+	devclass_register(dev, &vext_switch_dev);
+	devclass_set_priv(&vext_led_dev, priv);
+	devclass_set_priv(&vext_switch_dev, priv);
 	init_completion(&priv->sw_read_cplt);
 	return 0;
 }
