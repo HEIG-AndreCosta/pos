@@ -1,14 +1,15 @@
+#!/bin/bash
 
 export PYTHONPATH=sense-hat/out/lib/python2.7/site-packages/
 
 function qemu {
  echo Running QEMU
  ./st
-  killall -9 python3 2>/dev/null
+  pkill -9 -f sense-hat-server.py 2>/dev/null
 }
 
 # Prevent old sense-hat instances to be running
-killall -9 python3 2>/dev/null
+pkill -9 -f sense-hat-server.py 2>/dev/null
 
 # sense-hat-server will send a SIGUSR1 signal when the tcp server is started
 # so wait for this signal before starting qemu
@@ -17,10 +18,3 @@ trap qemu SIGUSR1
 python3 sense-hat/sense-hat-server.py $$ &
 
 wait
-
-
-
-
-
-
-

@@ -6,12 +6,12 @@ if [ "$PLATFORM" == "" ]; then
         echo "You can invoke mount.sh <partition_nr> <platform>"
         exit 0
     fi
-    
+
     PLATFORM=$1
 fi
 # Deploy usr apps into the second partition
 echo Deploying usr apps into the second partition...
 cd ../../filesystem
 ./mount.sh 2
-sudo cp ../linux/usr/out/* fs/root
+sudo cp ../linux/usr/out/$PLATFORM/* fs/root
 ./umount.sh
