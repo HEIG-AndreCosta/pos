@@ -5,6 +5,13 @@
 # Comments in this file are targeted only to the developer, do not
 # expect to learn how to build the kernel reading this file.
 
+this-makefile := $(lastword $(MAKEFILE_LIST))
+abs_srctree := $(realpath $(dir $(this-makefile)))
+abs_objtree := $(CURDIR)
+
+include $(abs_srctree)/../../build.conf
+$(info *********** Running for $(PLATFORM) *********)
+
 # Do not:
 # o  use make's built-in rules and variables
 #    (this increases performance and avoids hard-to-debug behaviour);
@@ -48,7 +55,10 @@ ifeq ($(KBUILD_SRC),)
 # Do we want to locate output files in a separate directory?
 ifeq ("$(origin O)", "command line")
   KBUILD_OUTPUT := $(O)/
+else
+  KBUILD_OUTPUT := build/$(PLATFORM)/
 endif
+
 
 ifeq ("$(origin W)", "command line")
   export KBUILD_ENABLE_EXTRA_GCC_CHECKS := $(W)
@@ -62,7 +72,7 @@ ifneq ($(KBUILD_OUTPUT),)
 # check that the output directory actually exists
 saved-output := $(KBUILD_OUTPUT)
 export saved-output
-KBUILD_OUTPUT := $(shell cd $(KBUILD_OUTPUT) && /bin/pwd)/
+KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) && /bin/pwd)/
 
 $(if $(KBUILD_OUTPUT),, \
      $(error output directory "$(saved-output)" does not exist))
@@ -277,7 +287,7 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
 include/config/%.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
 	$(Q)set -e
 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
- 
+
 
 else
 # Dummy target needed, because used as prerequisite
@@ -318,15 +328,15 @@ KBUILD_CFLAGS	:= -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraph
 
 KBUILD_AFLAGS_KERNEL := -I. -I$(srctree)/.
 KBUILD_CFLAGS_KERNEL := -I. -I$(srctree)/. -I$(srctree)/lib/libfdt
-KBUILD_AFLAGS   := -g -D__ASSEMBLY__ -mlittle-endian -fno-PIE -funwind-tables 
+KBUILD_AFLAGS   := -g -D__ASSEMBLY__ -mlittle-endian -fno-PIE -funwind-tables
 
 # Specific CFLAGS/AFLAGS according to ARCH
 
 SRCARCH := $(patsubst "%",%,$(CONFIG_ARCH))
 
 ifeq ($(CONFIG_ARCH_ARM32),y)
-KBUILD_CFLAGS	+= -mabi=aapcs -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -march=armv7-a -Uarm -DBITS_PER_LONG=32 
-KBUILD_AFLAGS   += -mabi=aapcs -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -march=armv7-a  
+KBUILD_CFLAGS	+= -mabi=aapcs -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -march=armv7-a -Uarm -DBITS_PER_LONG=32
+KBUILD_AFLAGS   += -mabi=aapcs -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -march=armv7-a
 endif
 
 ifeq ($(CONFIG_ARCH_ARM64),y)
@@ -370,8 +380,8 @@ ELF	= so3
 BIN	= so3.bin
 
 include $(srctree)/scripts/Makefile.build
- 
-all:  $(BIN) dtbs 
+
+all:  $(BIN) dtbs
 
 objs-y		:= arch/$(SRCARCH) kernel mm fs ipc devices apps net
 
@@ -402,8 +412,8 @@ ifdef CONFIG_MMU
 else
      cmd_so3 = $(LD) --defsym=CONFIG_HEAP_SIZE=$(CONFIG_HEAP_SIZE) -no-enum-size-warning --defsym=ENTRY_ADDR=$(CONFIG_RAM_BASE) -T $(srctree)/arch/$(SRCARCH)/so3.lds -o $@ $(so3-all) -L $(LIBGCC_PATH) -lgcc
 endif
-	 
-KBUILD_CFLAGS_KERNEL += -I$(srctree)/arch/$(SRCARCH)/include/ -I$(srctree)/arch/$(SRCARCH)/$(TARGET)/include/	
+
+KBUILD_CFLAGS_KERNEL += -I$(srctree)/arch/$(SRCARCH)/include/ -I$(srctree)/arch/$(SRCARCH)/$(TARGET)/include/
 KBUILD_AFLAGS_KERNEL += -I$(srctree)/arch/$(SRCARCH)/include/ -I$(srctree)/arch/$(SRCARCH)/$(TARGET)/include/
 
 ifdef CONFIG_SOO
@@ -416,12 +426,12 @@ export KBUILD_AFLAGS AFLAGS_KERNEL
 
 $(BIN): $(ELF)
 	$(OBJCOPY) --set-section-flags .bss=alloc,load,contents -O binary $< $@ 2>/dev/null
-	
+
 # ---------------------------------------------------------------------------
 # Devicetree files
 
 dtstree := dts
- 
+
 ifneq ($(dtstree),)
 
 %.dtb: scripts_dtc
@@ -434,7 +444,7 @@ PHONY += dtbs dtbs_check
 dtbs: scripts_dtc
 	$(Q)$(MAKE) $(build)=$(dtstree)
 
-dtbs: scripts_dtc  
+dtbs: scripts_dtc
 
 dtbs_check: export CHECK_DTBS=1
 dtbs_check: dtbs
@@ -445,11 +455,11 @@ PHONY += scripts_dtc
 scripts_dtc: scripts_basic
 	$(Q)$(MAKE) $(build)=scripts/dtc
 
- 
+
 $(ELF): $(so3-all) arch/$(SRCARCH)/so3.lds
 	$(call if_changed,so3)
 
-# The actual objects are generated when descending, 
+# The actual objects are generated when descending,
 # make sure no implicit rule kicks in
 $(sort $(so3-all)): $(so3-dirs) ;
 

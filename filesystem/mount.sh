@@ -6,27 +6,24 @@ if [ "$PLATFORM" == "" ]; then
         echo "You can invoke mount.sh <partition_nr> <platform>"
         exit 0
     fi
-    
+
     PLATFORM=$2
 fi
 
 sudo rm -rf fs/*
 mkdir -p fs
- 
+
 if [ "$PLATFORM" == "virt32" -o "$PLATFORM" == "virt64" ]; then
     devname=$(sudo losetup --partscan --find --show sdcard.img.${PLATFORM})
     FS_IMG=sdcard.img.${PLATFORM}
 
-    #sudo losetup -P --find --show flash
-   
-
     # device is loopback (loop<n>)
-    sudo mount ${devname}p$1 fs 
+    sudo mount ${devname}p$1 fs
     exit 0
 fi
 
 if [ "$devname" == "" ]; then
-    echo "Specify the device name of MMC (ex: sdb or mmcblk0 or other...)" 
+    echo "Specify the device name of MMC (ex: sdb or mmcblk0 or other...)"
     read devname
 fi
 

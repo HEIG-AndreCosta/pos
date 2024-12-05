@@ -2,8 +2,17 @@
 
 set -e
 
+while read var; do
+if [ "$var" != "" ]; then
+  export $(echo $var | sed -e 's/ //g' -e /^$/d -e 's/://g' -e /^#/d)
+fi
+# The following wizard ensure there is a final return line as read need it
+done < <(cat ../build.conf; echo)
+
+echo "******** Running for $PLATFORM ********"
+
 SO3_SRC=../so3/so3
-AVZ_TARGET=../../avz
+AVZ_TARGET=../../avz/build/$PLATFORM
 
 clean=n
 verbose=n

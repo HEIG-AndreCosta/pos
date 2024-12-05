@@ -39,6 +39,9 @@ else ifeq ("riscv64", $(MK_ARCH))
 endif
 undefine MK_ARCH
 
+include ../build.conf
+$(info *********** Running for $(PLATFORM) *********)
+
 # Avoid funny character set dependencies
 unexport LC_ALL
 LC_COLLATE=C
@@ -143,7 +146,10 @@ ifeq ($(KBUILD_SRC),)
 # Do we want to locate output files in a separate directory?
 ifeq ("$(origin O)", "command line")
   KBUILD_OUTPUT := $(O)
+else
+  KBUILD_OUTPUT := build/$(PLATFORM)
 endif
+
 
 # That's our default target when none is given on the command line
 PHONY := _all
@@ -270,7 +276,6 @@ export	HOSTARCH HOSTOS
 
 # set default to nothing for native builds
 # (SOO.tech) Usual toolchains for our systems
-include ../build.conf
 
 ifeq ($(PLATFORM),$(filter $(PLATFORM),virt64 rpi4_64))
 ARCH	= arm64
