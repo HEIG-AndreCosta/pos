@@ -15,9 +15,9 @@ pos:
     - echo "Creating persistent directory on the runner host at $ROOTFS_PATH"
     - mkdir -p $ROOTFS_PATH
     - docker build . -t $CONTAINER_NAME
-    - docker run --privileged -v $ROOTFS_PATH:/root/pos/rootfs -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" $CONTAINER_NAME sh -c ./build_rootfs.sh
+    - docker run --privileged -v $ROOTFS_PATH:/root/pos/rootfs.src -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" $CONTAINER_NAME sh -c ./build_rootfs.sh
     - echo "Copying file from the Docker image..."
-    - docker run --rm -v "$(pwd):/mnt/host" -v $ROOTFS_PATH:/root/pos/rootfs -t $CONTAINER_NAME sh -c "cp /root/pos/rootfs/board/virt32/rootfs.cpio /mnt/host/"
+    - docker run --rm -v "$(pwd):/mnt/host" -v $ROOTFS_PATH:/root/pos/rootfs.src -t $CONTAINER_NAME sh -c "cp /root/pos/rootfs/board/virt32/rootfs.cpio /mnt/host/"
     - cp rootfs.cpio $ROOTFS_PATH
   tags:
     - runners-server,shell
