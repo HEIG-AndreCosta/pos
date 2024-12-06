@@ -134,6 +134,14 @@ SECTIONS
 	
 	/* Initcall section for remaining init functions which can be performed with IRQs on */
     
+	__initcall_post_irq_init_t_core = .;
+    
+	.initcall_post_init_t_core : {
+		*(.initcall_post_irq_init_t_core);
+	}
+	
+	__initcall_post_irq_init_t_core_end = .;
+
     /* Alignment is required for subsequent allocation of L1 page tables */
   
     . = ALIGN(16384);
