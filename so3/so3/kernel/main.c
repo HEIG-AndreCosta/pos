@@ -60,7 +60,14 @@ void pre_irq_init(void) {
  */
 void post_init(void) {
 
-	 /* To be completed */
+	post_irq_init_t *post_irq_init;
+	int i;
+
+	post_irq_init = ll_entry_start(pre_irq_init_t, core);
+
+	for (i = 0; i < ll_entry_count(post_irq_init_t, core); i++)
+		post_irq_init[i]();
+
 }
 
 void *rest_init(void *dummy) {
