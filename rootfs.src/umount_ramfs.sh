@@ -7,9 +7,14 @@ if [ $# -ne 1 ]; then
 fi
 
 echo "Here: board is $1"
- 
-sudo umount fs
-sudo losetup -D
+
+sync
+
+while [ "$(findmnt fs)" != "" ]; do
+	sudo umount fs
+done
+
+loops=$(losetup --associated ./board/$1/rootfs.fat --output NAME --noheadings)
+sudo losetup --detach $loops
+
 sudo rm -rf fs
-
-
