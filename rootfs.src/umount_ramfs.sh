@@ -18,5 +18,3 @@ loops=$(losetup --associated ./board/$1/rootfs.fat --output NAME --noheadings)
 sudo losetup --detach $loops
 
 sudo rm -rf fs
-
-

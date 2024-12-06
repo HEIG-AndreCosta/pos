@@ -9,16 +9,15 @@ variables:
   # Define the rootfs path with unique identifiers for each namespace/project
   ROOTFS_PATH: "/mnt/gitlab-rootfs/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
 
+  ROOTFS_REPO_FOLDER: "rootfs.src"
+
 pos:
   stage: build
   script:
     - echo "Creating persistent directory on the runner host at $ROOTFS_PATH"
     - mkdir -p $ROOTFS_PATH
     - docker build . -t $CONTAINER_NAME
-    - docker run --privileged -v $ROOTFS_PATH:/root/pos/rootfs -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" $CONTAINER_NAME sh -c ./build_rootfs.sh
-    - echo "Copying file from the Docker image..."
-    - docker run --rm -v "$(pwd):/mnt/host" -v $ROOTFS_PATH:/root/pos/rootfs -t $CONTAINER_NAME sh -c "cp /root/pos/rootfs/board/virt32/rootfs.cpio /mnt/host/"
-    - cp rootfs.cpio $ROOTFS_PATH
+    - docker run --privileged -v $ROOTFS_PATH:/root/pos/$ROOTFS_REPO_FOLDER -t --env PATH="/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin:$PATH" $CONTAINER_NAME sh -c "git checkout $ROOTFS_REPO_FOLDER && ./build_rootfs.sh"
   tags:
     - runners-server,shell
 
@@ -26,10 +25,10 @@ upload_artifact:
   stage: upload
   script:
     - echo "Uploading rootfs.cpio artifact"
-    - cp $ROOTFS_PATH/rootfs.cpio .
+    - cp $ROOTFS_PATH/board/virt32/rootfs.cpio virt32.rootfs.cpio
   artifacts:
     paths:
-      - rootfs.cpio
+      - virt32.rootfs.cpio
     expire_in: never
   tags:
     - runners-server,shell

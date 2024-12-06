@@ -26,11 +26,3 @@ RUN cd /opt/toolchains && \
 COPY . /root/pos
 
 WORKDIR /root/pos
-
-
-
-
-
-
-
-
