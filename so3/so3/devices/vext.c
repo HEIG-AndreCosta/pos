@@ -32,6 +32,8 @@
 #include <asm/io.h>
 #include <device/driver.h>
 
+#include <device/arch/rpisense.h>
+
 struct vext_data {
 	void *base_addr;
 	uint8_t led_status;
@@ -40,12 +42,19 @@ struct vext_data {
 	uint32_t irqctrl_offset;
 	completion_t sw_read_cplt;
 	uint8_t key_index;
+	bool is_virt32;
 };
 
 #define VEXT_IRQ_CTRL_BTN_MASK	(0xE)
 #define VEXT_IRQ_CTRL_BTN_SHIFT (0x1)
 
 const static int KEYS[] = { KEY_ENTER, KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN };
+
+static void on_key_press(struct vext_data *priv, int key)
+{
+	priv->key_index = key;
+	complete(&priv->sw_read_cplt);
+}
 
 static irq_return_t irq_handler(int irq, void *data)
 {
@@ -55,8 +64,8 @@ static irq_return_t irq_handler(int irq, void *data)
 			      VEXT_IRQ_CTRL_BTN_SHIFT;
 
 	iowrite8(priv->base_addr + priv->irqctrl_offset, 0x81);
-	priv->key_index = btn_pressed;
-	complete(&priv->sw_read_cplt);
+
+	on_key_press(priv, btn_pressed);
 	printk("IRQ Handler %x\n", btn_pressed);
 	return IRQ_BOTTOM;
 }
@@ -66,26 +75,40 @@ static irq_return_t irq_differed_handler(int irq, void *data)
 	return IRQ_COMPLETED;
 }
 
+static void joystick_handler(void *arg, int key)
+{
+	printk("Joystick handler %x\n", key);
+	on_key_press((struct vext_data *)arg, key);
+}
 static int vext_led_write(int fd, const void *buffer, int count)
 {
 	struct devclass *dev;
 	struct vext_data *priv;
 	uint8_t mask;
+	uint8_t led_no;
+	int is_off;
 	printk("Vext Write\n");
 	if (count < 2) {
 		return 0;
 	}
+	is_off = ((char *)buffer)[0] == '0';
 	dev = devclass_by_fd(fd);
 	priv = (struct vext_data *)devclass_get_priv(dev);
-	mask = 1 << devclass_fd_to_id(fd);
 
-	if (((char *)buffer)[0] == '0') {
-		priv->led_status &= ~mask;
+	led_no = devclass_fd_to_id(fd);
+	if (priv->is_virt32) {
+		mask = 1 << devclass_fd_to_id(fd);
+
+		if (is_off) {
+			priv->led_status &= ~mask;
+		} else {
+			priv->led_status |= mask;
+		}
+
+		iowrite8(priv->base_addr + priv->led_offset, priv->led_status);
 	} else {
-		priv->led_status |= mask;
+		display_led(led_no, !is_off);
 	}
-
-	iowrite8(priv->base_addr + priv->led_offset, priv->led_status);
 	return 2;
 }
 
@@ -156,7 +179,17 @@ static uint32_t vext_get_register_offset(int fdt_offset, const char *node_name)
 	fdt_property_read_u32(__fdt_addr, fdt_offset, "reg", &value);
 	return value;
 }
-int vext_init(dev_t *dev, int fdt_offset)
+
+int common_init(dev_t *dev, struct vext_data *priv)
+{
+	devclass_register(dev, &vext_led_dev);
+	devclass_register(dev, &vext_switch_dev);
+
+	devclass_set_priv(&vext_led_dev, priv);
+	devclass_set_priv(&vext_switch_dev, priv);
+}
+
+int virt_vext_init(dev_t *dev, int fdt_offset)
 {
 	/*
 	 * Le kernel itére sur le device tree et
@@ -185,23 +218,43 @@ int vext_init(dev_t *dev, int fdt_offset)
 
 	BUG_ON(!priv->base_addr);
 
+	priv->is_virt32 = 1;
+
 	priv->led_offset = vext_get_register_offset(fdt_offset, "led");
 	priv->sw_offset = vext_get_register_offset(fdt_offset, "switch");
 	priv->irqctrl_offset = vext_get_register_offset(fdt_offset, "irqctrl");
-
-	devclass_register(dev, &vext_led_dev);
-	devclass_register(dev, &vext_switch_dev);
-
-	devclass_set_priv(&vext_led_dev, priv);
-	devclass_set_priv(&vext_switch_dev, priv);
 
 	fdt_interrupt_node(fdt_offset, &irq);
 
 	init_completion(&priv->sw_read_cplt);
 	irq_bind(irq.irqnr, irq_handler, irq_differed_handler, priv);
+
+	common_init(dev, priv);
+
 	iowrite8(priv->base_addr + priv->irqctrl_offset, 0x80);
 
 	return 0;
 }
 
-REGISTER_DRIVER_POSTCORE("pos,vext", vext_init);
+int rpi4_vext_init(dev_t *dev, int fdt_offset)
+{
+	struct vext_data *priv;
+	printk("Vext Init\n");
+	priv = (struct vext_data *)malloc(sizeof(*priv));
+	BUG_ON(!priv);
+
+	priv->is_virt32 = 0;
+	common_init(dev, priv);
+	rpisense_joystick_handler_register(priv, joystick_handler);
+
+	return 0;
+}
+void vext_post_init(void)
+{
+	//FIXME: This only works because there's a 'dummy' implementation of the rpisense for virt32
+	rpisense_matrix_off();
+}
+
+REGISTER_DRIVER_POSTCORE("pos,vext", virt_vext_init);
+REGISTER_DRIVER_POSTCORE("rpi4,vext", rpi4_vext_init);
+REGISTER_POST_IRQ_INIT(vext_post_init)
