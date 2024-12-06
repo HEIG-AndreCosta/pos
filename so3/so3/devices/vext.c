@@ -180,7 +180,7 @@ static uint32_t vext_get_register_offset(int fdt_offset, const char *node_name)
 	return value;
 }
 
-int common_init(dev_t *dev, struct vext_data *priv)
+static void common_init(dev_t *dev, struct vext_data *priv)
 {
 	devclass_register(dev, &vext_led_dev);
 	devclass_register(dev, &vext_switch_dev);
