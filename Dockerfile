@@ -23,6 +23,13 @@ RUN cd /opt/toolchains && \
     rm gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf.tar.xz && \
     echo export PATH=${PATH}:/opt/toolchains/gcc-linaro-11.3.1-2022.06-x86_64_arm-linux-gnueabihf/bin >> /root/.bashrc
 
+# Install aarch64 toolchain
+RUN wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+RUN tar -xvf gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+RUN rm gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz
+
+ENV PATH="$PATH:/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin"
+
 COPY . /root/pos
 
 WORKDIR /root/pos
