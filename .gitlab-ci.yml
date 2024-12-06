@@ -28,13 +28,13 @@ upload_artifact:
     - cp $ROOTFS_PATH/board/virt32/rootfs.cpio virt32.rootfs.cpio
     - cp $ROOTFS_PATH/board/virt64/rootfs.cpio virt64.rootfs.cpio
     - cp $ROOTFS_PATH/board/rpi4/rootfs.cpio rpi4.rootfs.cpio
-    - cp $ROOTFS_PATH/board/rpi4_64/rootfs.cpio rpi4_64.rootfs.cpio
+    # - cp $ROOTFS_PATH/board/rpi4_64/rootfs.cpio rpi4_64.rootfs.cpio
   artifacts:
     paths:
       - virt32.rootfs.cpio
       - virt64.rootfs.cpio
       - rpi4.rootfs.cpio
-      - rpi4_64.rootfs.cpio
+      # - rpi4_64.rootfs.cpio
     expire_in: never
   tags:
     - runners-server,shell
