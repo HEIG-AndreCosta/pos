@@ -42,6 +42,7 @@
 
 	vext{
 		compatible = "rpi4,vext";
+		status = "ok";
 	};
 	
 	/* RPi4 miniuart NS16550 console */
