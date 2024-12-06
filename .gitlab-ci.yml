@@ -4,7 +4,7 @@ stages:
   - upload
 
 variables:
-  CONTAINER_NAME: "pos_container"
+  CONTAINER_NAME: "$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
 
   # Define the rootfs path with unique identifiers for each namespace/project
   ROOTFS_PATH: "/mnt/gitlab-rootfs/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME"
