@@ -52,8 +52,10 @@
 
 
 typedef void (*pre_irq_init_t)(void);
+typedef void (*post_irq_init_t)(void);
 
 #define REGISTER_PRE_IRQ_INIT(_init) ll_entry_declare(pre_irq_init_t, core, _init) = _init;
+#define REGISTER_POST_IRQ_INIT(_init) ll_entry_declare(post_irq_init_t, core, _init) = _init;
 
 void pre_irq_init(void);
 
