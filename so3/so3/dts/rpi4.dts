@@ -39,6 +39,10 @@
 		reg = <0xff841000 0x1000 0xff842000 0x1000>;
 		status = "ok";
 	};
+
+	vext{
+		compatible = "rpi4,vext";
+	};
 	
 	/* RPi4 miniuart NS16550 console */
 	serial@fe215040 {
