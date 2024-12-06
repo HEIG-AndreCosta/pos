@@ -26,9 +26,15 @@ upload_artifact:
   script:
     - echo "Uploading rootfs.cpio artifact"
     - cp $ROOTFS_PATH/board/virt32/rootfs.cpio virt32.rootfs.cpio
+    - cp $ROOTFS_PATH/board/virt64/rootfs.cpio virt64.rootfs.cpio
+    - cp $ROOTFS_PATH/board/rpi4/rootfs.cpio rpi4.rootfs.cpio
+    - cp $ROOTFS_PATH/board/rpi4_64/rootfs.cpio rpi4_64.rootfs.cpio
   artifacts:
     paths:
       - virt32.rootfs.cpio
+      - virt64.rootfs.cpio
+      - rpi4.rootfs.cpio
+      - rpi4_64.rootfs.cpio
     expire_in: never
   tags:
     - runners-server,shell
@@ -36,7 +42,7 @@ upload_artifact:
 clean:
   stage: prepare
   script:
-    - docker run --rm -v "$(pwd):/mnt/host" -v $ROOTFS_PATH:/root/pos/rootfs -t $CONTAINER_NAME sh -c "rm -rf /root/pos/rootfs/*"
+    - rm $ROOTFS_PATH
   when: manual
   tags:
     - runners-server,shell
