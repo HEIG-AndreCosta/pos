@@ -36,7 +36,7 @@ upload_artifact:
 clean:
   stage: prepare
   script:
-    - docker run --rm -v "$(pwd):/mnt/host" -v $ROOTFS_PATH:/root/pos/rootfs -t $CONTAINER_NAME sh -c "rm -rf /root/pos/rootfs/*"
+    - rm $ROOTFS_PATH
   when: manual
   tags:
     - runners-server,shell
