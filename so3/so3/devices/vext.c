@@ -182,6 +182,7 @@ static uint32_t vext_get_register_offset(int fdt_offset, const char *node_name)
 
 static void common_init(dev_t *dev, struct vext_data *priv)
 {
+	init_completion(&priv->sw_read_cplt);
 	devclass_register(dev, &vext_led_dev);
 	devclass_register(dev, &vext_switch_dev);
 
@@ -226,7 +227,6 @@ int virt_vext_init(dev_t *dev, int fdt_offset)
 
 	fdt_interrupt_node(fdt_offset, &irq);
 
-	init_completion(&priv->sw_read_cplt);
 	irq_bind(irq.irqnr, irq_handler, irq_differed_handler, priv);
 
 	common_init(dev, priv);
