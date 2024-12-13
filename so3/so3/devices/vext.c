@@ -77,8 +77,28 @@ static irq_return_t irq_differed_handler(int irq, void *data)
 
 static void joystick_handler(void *arg, int key)
 {
+	int key_index;
 	printk("Joystick handler %x\n", key);
-	on_key_press((struct vext_data *)arg, key);
+	switch (key) {
+	case 0x01:
+		key_index = 4;
+		break;
+	case 0x02:
+		key_index = 3;
+		break;
+	case 0x04:
+		key_index = 2;
+		break;
+	case 0x08:
+		key_index = 0;
+		break;
+	case 0x10:
+		key_index = 1;
+		break;
+	default:
+		return;
+	}
+	on_key_press((struct vext_data *)arg, key_index);
 }
 static int vext_led_write(int fd, const void *buffer, int count)
 {
