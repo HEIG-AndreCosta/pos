@@ -82,7 +82,7 @@
         compatible = "bcm,rpisense";
 		interrupt-parent = <&gic>;
 		interrupts = <0 113 4>;
-		status = "disabled";
+		status = "ok";
     };
 	
 };
