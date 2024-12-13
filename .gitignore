@@ -54,3 +54,4 @@ so3/so3/.config
 so3/so3/.config.old
 *.dtb
 *.bin
+*.gdb_history
