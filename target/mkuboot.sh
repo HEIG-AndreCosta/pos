@@ -6,5 +6,5 @@ then
     exit
 fi
 
-mkimage -f $1.its $1.itb
+../u-boot/build/$1/tools/mkimage -f $1.its $1.itb
 
