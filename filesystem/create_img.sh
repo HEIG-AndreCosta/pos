@@ -26,8 +26,17 @@ if [ "$1" == "rpi4" -o "$1" == "rpi4_64" ]; then
     read devname
 fi
 
+# Ensure that the device isn't mounted before creating the image, doesn't call ./umount.sh to avoid remove the disk loopback
 export devname=$devname
-./umount.sh $1
+while mounted_dev=$(mount -l | grep -E "/dev/($(echo $devname | sed 's/ /|/g'))" | sed -n 's/^\(\/dev\/[^ ]*\).*$/\1/p') && [ "$mounted_dev" != "" ]; do
+    # Ensure that nothing is using a file in mounted device
+    while lsof +f -- ${mounted_dev}; do
+        echo "Waiting for target to be unbusy"
+        sleep 0.5
+    done
+
+    sudo umount ${mounted_dev}
+done
 
 if [ "$1" == "virt32" -o "$1" == "rpi4" -o "$1" == "rpi4_64" -o "$1" == "virt64" ]; then
 # Create the partition layout this way

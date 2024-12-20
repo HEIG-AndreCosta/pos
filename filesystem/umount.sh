@@ -10,7 +10,9 @@ if [ "$PLATFORM" == "" ]; then
     PLATFORM=$1
 fi
 
-sync -f fs
+if [ -d fs ]; then
+    sync -f fs
+fi
 
 if [ "$PLATFORM" == "virt32" -o "$PLATFORM" == "virt64" ]; then
     devpaths=$(losetup --associated sdcard.img.$PLATFORM --output NAME --noheadings)
