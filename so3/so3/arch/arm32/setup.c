@@ -126,6 +126,11 @@ void cpu_init(void) {
 void setup_arch(void) {
 
 	/* TODO POS: get avz_share infos */
+#ifdef CONFIG_SO3VIRT
+	__printch = avz_shared->printch;
+	HYPERVISOR_hypercall_addr =
+		(volatile uint32_t *)avz_shared->hypercall_vaddr;
+#endif
 
 	/* Original boot CPU identification to prevent undesired activities on another CPU . */
 	origin_cpu = smp_processor_id();
