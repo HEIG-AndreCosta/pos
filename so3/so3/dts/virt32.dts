@@ -30,6 +30,10 @@
 		compatible = "arm,virt32";
 	};
 
+	agency {
+		domain-size = <0x10000000>;
+	};
+
 	memory {
 		device_type = "memory";
 		reg = <0x41000000 0x20000000>; /* 512 MB */
