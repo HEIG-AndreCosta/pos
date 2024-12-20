@@ -55,7 +55,7 @@
 		so3 {
 			description = "so3 kernel";
 			data = /incbin/("../so3/so3/build/virt32/so3.bin");
-			type ="kernel";
+			type ="avz";
 			arch = "arm";
 			os = "linux";
 			compression = "none";
@@ -81,9 +81,28 @@
 			load = <0x44c00000>;
 		};
 
+		avz {
+			description = "AVZ Hypervisor (32-bit) Polymorphic SO3";
+			data = /incbin/("../avz/build/virt32/so3.bin");
+			type = "kernel";
+			os = "linux";
+			arch = "arm";
+			compression = "none";
+			load = <0x40008000>;
+			entry = <0x40008000>;
+		};
+		avz_dt {
+			description = "Flatenned Device Tree blot";
+			data = /incbin/("../avz/build/virt32/dts/virt32_avz.dtb");
+			type = "avz_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x40b00000>;
+		};
+
 	};
 	configurations {
-		default = "so3";
+		default = "so3_avz";
 
 		linux {
 			description = "Linux kernel image including device tree";
@@ -94,6 +113,13 @@
 		so3 {
 			description = "so3 kernel image including device tree";
 			kernel = "so3";
+			fdt = "so3_fdt";
+			ramdisk = "so3_rootfs";
+		};
+		so3_avz {
+			description = "so3 kernel image including device tree running on AVZ";
+			kernel = "avz";
+			loadables = "avz_dt", "so3";
 			fdt = "so3_fdt";
 			ramdisk = "so3_rootfs";
 		};
