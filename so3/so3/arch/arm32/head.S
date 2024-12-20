@@ -72,7 +72,13 @@ __start:
   @ r1 = machine id
   @ r2 = dtb address
 
-	/* TODO POS: share avz_shared */
+#ifdef CONFIG_SO3VIRT
+  ldr r10, =avz_shared
+  str r12, [r10]
+
+  mov r8, #0
+
+#else
 
   @ Make sure we start in SVC
   safe_svcmode_maskall r9
@@ -97,6 +103,7 @@ cont:
   add	r1, r1, r8
   mcr 	p15, 0, r1, c12, c0, 0		@ vector table
 
+#endif /* CONFIG_SO3VIRT */
 
   @ Prepare to clear bss and zero fp
   ldr	r6, =__bss_start
