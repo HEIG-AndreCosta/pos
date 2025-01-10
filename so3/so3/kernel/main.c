@@ -60,6 +60,7 @@ void pre_irq_init(void) {
  */
 void post_init(void) {
 
+#ifdef CONFIG_ARCH_ARM32
 	post_irq_init_t *post_irq_init;
 	int i;
 
@@ -67,6 +68,7 @@ void post_init(void) {
 
 	for (i = 0; i < ll_entry_count(post_irq_init_t, core); i++)
 		post_irq_init[i]();
+#endif
 
 }
 
