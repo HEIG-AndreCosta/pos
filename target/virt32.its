@@ -92,7 +92,7 @@
 			entry = <0x40008000>;
 		};
 		avz_dt {
-			description = "Flatenned Device Tree blot";
+			description = "Flatenned Device Tree blob";
 			data = /incbin/("../avz/build/virt32/dts/virt32_avz.dtb");
 			type = "avz_dt";
 			arch = "arm";
