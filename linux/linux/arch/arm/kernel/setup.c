@@ -1102,6 +1102,7 @@ extern u64 __pv_offset;
 void __init avz_setup(void)
 {
 	
+	HYPERVISOR_hypercall_addr = (volatile uint32_t *) avz_shared->hypercall_vaddr;
 
 	__pv_phys_pfn_offset = avz_shared->dom_phys_offset >> PAGE_SHIFT;
 	__pv_offset = (u64) (avz_shared->dom_phys_offset - PAGE_OFFSET);

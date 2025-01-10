@@ -120,6 +120,9 @@ ENTRY(stext)
     ldr sp, __init_sp
 
 	@ AVZ setup
+	ldr r10, =avz_shared
+	str r12, [r10]
+
 	bl	avz_setup
 
 	mrc	p15, 0, r9, c0, c0		@ get processor id
