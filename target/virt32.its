@@ -26,7 +26,7 @@
 		linux {
 			description = "Linux kernel";
 			data = /incbin/("../linux/linux/build/virt32/arch/arm/boot/Image");
-			type = "kernel";
+			type = "avz";
 			arch = "arm";
 			os = "linux";
 			compression = "none";
@@ -102,11 +102,18 @@
 
 	};
 	configurations {
-		default = "so3_avz";
+		default = "linux_avz";
 
 		linux {
 			description = "Linux kernel image including device tree";
 			kernel = "linux";
+			fdt = "fdt_linux";
+			ramdisk = "initrd";
+		};
+		linux_avz {
+			description = "Linux kernel image including device tree running on AVZ";
+			kernel = "avz";
+			loadables = "avz_dt", "linux";
 			fdt = "fdt_linux";
 			ramdisk = "initrd";
 		};
