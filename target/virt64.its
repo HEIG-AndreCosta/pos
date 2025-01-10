@@ -1,0 +1,49 @@
+/dts-v1/;
+
+/ {
+	description = "Kernel and rootfs components for virt64 environment";
+
+	images {
+
+		linux {
+			description = "Linux kernel";
+			data = /incbin/("../linux/linux/build/virt64/arch/arm64/boot/Image");
+			type = "kernel";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0x41000000>;
+			entry = <0x41000000>;
+		};
+
+		fdt_linux {
+			description = "Linux device tree blob";
+			data = /incbin/("../linux/linux/build/virt64/arch/arm64/boot/dts/arm/virt64.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			load = <0x5a000000>;
+		};
+
+		initrd {
+			description = "Initial rootfs (initrd)";
+			data = /incbin/("../rootfs/board/virt64/initrd.cpio");
+			type = "ramdisk";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0x50c00000>;
+		};
+
+	};
+	configurations {
+		default = "linux";
+
+		linux {
+			description = "Linux kernel image including device tree";
+			kernel = "linux";
+			fdt = "fdt_linux";
+			ramdisk = "initrd";
+		};
+	};
+};
