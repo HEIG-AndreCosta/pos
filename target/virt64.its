@@ -8,7 +8,7 @@
 		linux {
 			description = "Linux kernel";
 			data = /incbin/("../linux/linux/build/virt64/arch/arm64/boot/Image");
-			type = "kernel";
+			type = "avz";
 			arch = "arm64";
 			os = "linux";
 			compression = "none";
@@ -35,13 +35,42 @@
 			load = <0x50c00000>;
 		};
 
+		avz {
+			description = "AVZ Hypervisor (64-bit) Polymorphic SO3";
+			data = /incbin/("../avz/build/virt64/so3.bin");
+			type = "kernel";
+			os = "linux";
+			arch = "arm64";
+			compression = "none";
+			load = <0x40080000>;
+			entry = <0x40080000>;
+		};
+		avz_dt {
+			description = "Flatenned Device Tree blob";
+			data = /incbin/("../avz/build/virt64/dts/virt64_avz_pv.dtb");
+			type = "avz_dt";
+			arch = "arm64";
+			compression = "none";
+			load = <0x40b00000>;
+		};
+
+
+
 	};
 	configurations {
-		default = "linux";
+		default = "linux_avz";
 
 		linux {
 			description = "Linux kernel image including device tree";
 			kernel = "linux";
+			fdt = "fdt_linux";
+			ramdisk = "initrd";
+		};
+
+		linux_avz {
+			description = "Linux kernel image including device tree running on AVZ";
+			kernel = "avz";
+			loadables = "avz_dt", "linux";
 			fdt = "fdt_linux";
 			ramdisk = "initrd";
 		};
