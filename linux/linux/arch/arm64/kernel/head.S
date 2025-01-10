@@ -476,6 +476,8 @@ SYM_FUNC_START_LOCAL(__primary_switched)
 	str	x5, [x6]
 
 	// AVZ setup
+	ldr x20, =avz_shared
+	str x22, [x20]
 	bl	avz_setup
 
 	// Set new PHYS_OFFSET in x0

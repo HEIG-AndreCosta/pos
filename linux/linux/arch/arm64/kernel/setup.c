@@ -317,6 +317,8 @@ extern u64 __pv_offset;
 void __init avz_setup(void)
 {
 
+	HYPERVISOR_hypercall_addr = (volatile long *) avz_shared->hypercall_vaddr;
+
 	/* Retrieve the start of (virtual) RAM */
 	avz_guest_phys_offset = avz_shared->dom_phys_offset;
 }
