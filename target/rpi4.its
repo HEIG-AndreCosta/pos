@@ -25,7 +25,7 @@
 		linux {
 			description = "Linux kernel";
 			data = /incbin/("../linux/linux/build/rpi4/arch/arm/boot/Image");
-			type = "kernel";
+			type = "avz";
 			arch = "arm";
 			os = "linux";
 			compression = "none";
@@ -101,11 +101,19 @@
 	};
 
 	configurations {
-		default = "so3_avz";
+		default = "linux_avz";
 
 		conf_linux {
 			description = "Linux on Raspberry Pi 4";
 			kernel = "linux";
+			fdt = "fdt_linux";
+			ramdisk = "initrd";
+		};
+
+		linux_avz {
+			description = "Linux kernel image including device tree running on AVZ";
+			kernel = "avz";
+			loadables = "avz_dt", "linux";
 			fdt = "fdt_linux";
 			ramdisk = "initrd";
 		};

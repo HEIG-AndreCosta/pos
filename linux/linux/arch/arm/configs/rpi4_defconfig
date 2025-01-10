@@ -277,7 +277,7 @@ CONFIG_ARCH_MULTI_V7=y
 CONFIG_ARCH_MULTI_V6_V7=y
 # end of Multiple platform selection
 
-# CONFIG_LINUXVIRT is not set
+CONFIG_LINUXVIRT=y
 # CONFIG_ARCH_VIRT is not set
 # CONFIG_ARCH_ACTIONS is not set
 # CONFIG_ARCH_ALPINE is not set
