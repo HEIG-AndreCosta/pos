@@ -5,7 +5,8 @@
 # First setup the building environment
 
 
-GCC       = arm-linux-gnueabihf-
+# GCC       = arm-linux-gnueabihf-
+GCC       = aarch64-none-linux-gnu-
 CC           = $(GCC)gcc
 AS           = $(GCC)as
 AR           = $(GCC)ar
@@ -22,7 +23,7 @@ LIBGCC_PATH := $(shell dirname `$(CC) $(USR_CFLAGS) -print-libgcc-file-name`)
 AFLAGS      := -D__ASSEMBLY__
 
 # Compiler Options - Optimisation, warnings and compiler execution parameters
-USR_CFLAGS      := -O0 -pipe -Wall  -D__ARM__ -marm  -mno-thumb-interwork  -g
+USR_CFLAGS      := -O0 -pipe -Wall  -D__ARM__   -g
 
 # Compiler Options - Libraries parameters
 USR_CFLAGS      += -ffreestanding -I. -Isrc/include -fno-common
