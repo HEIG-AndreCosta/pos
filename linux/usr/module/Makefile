@@ -7,7 +7,7 @@ KDIR = $(abs_srctree)/../../linux
 
 obj-m := access_mod.o
 
-access_mod-objs += access.o rpisense.o
+access_mod-objs += rpisense.o accel.o
 
 .PHONY: module clean
 
