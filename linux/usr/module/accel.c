@@ -119,6 +119,7 @@ static int accel_probe(struct i2c_client *client,
 	priv->miscdev = (struct miscdevice){ .minor = MISC_DYNAMIC_MINOR,
 					     .name = DRIVER_NAME,
 					     .fops = &accel_fops };
+	priv->client = client;
 	/*regmap = devm_regmap_init_i2c(client, &lsm9ds1_i2c_config);*/
 	/**/
 	/*if (IS_ERR(regmap)) {*/
