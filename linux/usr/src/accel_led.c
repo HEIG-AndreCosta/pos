@@ -75,6 +75,8 @@ int main(int argc, char **argv)
 		led_update(3, pitch < -10, is_reversed);
 		led_update(4, roll > 10, is_reversed);
 
+		printf("Temperature : %.2f°C\n",
+		       (double)data.raw_temp / 16 + 25);
 		//Wait 100 ms
 		usleep(100000);
 	}
