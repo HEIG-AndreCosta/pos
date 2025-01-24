@@ -1,3 +1,4 @@
+#include "linux/mod_devicetable.h"
 #include "linux/uaccess.h"
 #include <linux/kernel.h>
 #include <linux/miscdevice.h>
@@ -90,12 +91,6 @@ const static struct file_operations accel_fops = {
 	.write = accel_write,
 };
 
-static struct miscdevice accel_miscdev = {
-	.minor = MISC_DYNAMIC_MINOR,
-	.name = DRIVER_NAME,
-	.fops = &accel_fops,
-};
-
 static const struct regmap_config lsm9ds1_i2c_config = {
 	.reg_bits = 8,
 	.val_bits = 8,
@@ -105,44 +100,77 @@ static int accel_probe(struct i2c_client *client,
 		       const struct i2c_device_id *id)
 {
 	uint8_t ret;
-	struct regmap *regmap;
+	/*struct regmap *regmap;*/
+	struct accel_data *priv;
+	pr_info("Probe!\n");
+	priv = devm_kzalloc(&client->dev, sizeof(struct accel_data),
+			    GFP_KERNEL);
+	if (!priv) {
+		pr_err("Failed to allocate memory\n");
+		return -ENOMEM;
+	}
 
 	if (id->driver_data != DEVICE_ID) {
-		return -1;
+		pr_err("Invalid Device ID. Expected (%d), Got (%lu)\n",
+		       DEVICE_ID, id->driver_data);
+		return -EINVAL;
 	}
 
-	ret = misc_register(&accel_miscdev);
-
-	regmap = devm_regmap_init_i2c(client, &lsm9ds1_i2c_config);
-
-	if (IS_ERR(regmap)) {
-		dev_err(&client->dev, "Failed to register i2c regmap %d\n",
-			(int)PTR_ERR(regmap));
-		return PTR_ERR(regmap);
-	}
+	priv->miscdev = (struct miscdevice){ .minor = MISC_DYNAMIC_MINOR,
+					     .name = DRIVER_NAME,
+					     .fops = &accel_fops };
+	/*regmap = devm_regmap_init_i2c(client, &lsm9ds1_i2c_config);*/
+	/**/
+	/*if (IS_ERR(regmap)) {*/
+	/*	dev_err(&client->dev, "Failed to register i2c regmap %d\n",*/
+	/*		(int)PTR_ERR(regmap));*/
+	/*	return PTR_ERR(regmap);*/
+	/*}*/
 
 	// Read the device ID
 	ret = i2c_smbus_read_byte_data(client, REG_WHO_AM_I);
 
 	if (ret != DEVICE_ID) {
-		return -1;
+		pr_err("Invalid WHO_AM_I register value. Expected (%d), Got (%hhu)\n",
+		       DEVICE_ID, ret);
+		kfree(priv);
+		return -EINVAL;
 	}
 
 	// Setup high performance mode
-	i2c_smbus_write_byte_data(client, REG_CTRL1_M, HIGH_PERFORMANCE_MODE);
+	ret = i2c_smbus_write_byte_data(client, REG_CTRL1_M,
+					HIGH_PERFORMANCE_MODE);
+	if (ret != 0) {
+		pr_err("Write Failed(%d)}\n", ret);
+		kfree(priv);
+		return -EINVAL;
+	}
 
-	return 0;
+	pr_info("Now registering Misc Device\n");
+
+	return misc_register(&accel_miscdev);
 }
 
-static const struct i2c_device_id accel_ids[] = { { "st,lsm9ds1-accel",
+static int accel_remove(struct i2c_client *client)
+{
+	//TODOO
+	return 0;
+}
+static const struct of_device_id of_ids[] = {
+	{ .compatible = "st,lsm9ds1-accel", .data = "lsm9ds1-accel" },
+	{}
+};
+
+static const struct i2c_device_id accel_ids[] = { { "lsm9ds1-accel",
 						    DEVICE_ID },
 						  {} };
 
 MODULE_DEVICE_TABLE(i2c, accel_ids);
 
 static struct i2c_driver accel_driver = {
-	.driver = { .name = DRIVER_NAME },
+	.driver = { .name = DRIVER_NAME, .of_match_table = of_ids },
 	.probe = accel_probe,
+	.remove = accel_remove,
 	.id_table = accel_ids,
 };
 
