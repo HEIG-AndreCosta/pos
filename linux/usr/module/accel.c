@@ -153,7 +153,8 @@ static int accel_probe(struct i2c_client *client,
 
 static int accel_remove(struct i2c_client *client)
 {
-	//TODOO
+	struct accel_data *priv = client->dev.driver_data;
+	misc_deregister(&priv->miscdev);
 	return 0;
 }
 static const struct of_device_id of_ids[] = {
