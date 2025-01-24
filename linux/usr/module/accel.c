@@ -148,7 +148,7 @@ static int accel_probe(struct i2c_client *client,
 
 	pr_info("Now registering Misc Device\n");
 
-	return misc_register(&accel_miscdev);
+	return misc_register(&priv->miscdev);
 }
 
 static int accel_remove(struct i2c_client *client)
