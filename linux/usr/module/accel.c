@@ -7,7 +7,7 @@
 
 #define DRIVER_NAME	      "lsm9ds1-accel-driver"
 
-#define DEVICE_ID	      0x3d
+#define DEVICE_ID	      0x68
 
 #define REG_WHO_AM_I	      0x0f
 #define REG_CTRL1_M	      0x20
