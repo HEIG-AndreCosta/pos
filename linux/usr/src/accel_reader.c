@@ -1,5 +1,3 @@
-
-
 #include "accel.h"
 #include <math.h>
 #include <fcntl.h>
@@ -7,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 int main(int argc, char **argv)
 {
 	if (argc < 2) {
@@ -19,11 +18,13 @@ int main(int argc, char **argv)
 		if (read(fd, &data, sizeof(data)) == -1) {
 			break;
 		}
-		uint16_t roll = atan2(data.y, data.z);
-		uint16_t pitch =
-			atan2(-data.x, sqrt(data.y * data.y + data.z * data.z));
+		double roll = atan2(data.y, data.z) * 180 / M_PI;
+		double pitch = atan2(-data.x,
+				     sqrt(data.y * data.y + data.z * data.z)) *
+			       180 / M_PI;
 
-		printf("Roll :%d Pitch %d\n", roll, pitch);
+		printf("(%d, %d, %d) - Roll :%g Pitch %g\n", data.x, data.y,
+		       data.z, roll, pitch);
 		sleep(1);
 	}
 	return EXIT_SUCCESS;
