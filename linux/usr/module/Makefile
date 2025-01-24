@@ -5,9 +5,10 @@ abs_srctree := $(realpath $(dir $(this-makefile)))
 
 KDIR = $(abs_srctree)/../../linux
 
-obj-m := access_mod.o
+obj-m := access_mod.o accel_mod.o
 
-access_mod-objs += rpisense.o accel.o
+access_mod-objs += rpisense.o access.o
+accel_mod-objs += accel.o
 
 .PHONY: module clean
 
