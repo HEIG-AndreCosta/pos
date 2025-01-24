@@ -26,7 +26,7 @@ AFLAGS      := -D__ASSEMBLY__
 USR_CFLAGS      := -O0 -pipe -Wall  -D__ARM__   -g
 
 # Compiler Options - Libraries parameters
-USR_CFLAGS      += -ffreestanding -I. -Isrc/include -fno-common
+USR_CFLAGS      += -ffreestanding -I. -Isrc/include -fno-common -lm
 
 # Aggressive flags
 USR_CFLAGS	+= -Wall -Werror
