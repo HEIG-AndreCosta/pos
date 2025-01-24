@@ -1,1 +1,1 @@
-TARGETS := display vextctl event_reader simon
+TARGETS := display vextctl event_reader simon accel_reader
