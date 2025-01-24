@@ -1,4 +1,5 @@
 #include "linux/mod_devicetable.h"
+#include "linux/types.h"
 #include "linux/uaccess.h"
 #include <linux/kernel.h>
 #include <linux/miscdevice.h>
@@ -16,6 +17,9 @@
 #define DATA_RATE_MASK	      0x18
 #define DATA_RATE_SHIFT	      3
 
+#define REG_OUT_TEMP_L	      0x15
+#define REG_OUT_TEMP_H	      0x16
+
 #define HIGH_PERFORMANCE_MODE 0x20
 
 enum accel_scale {
@@ -30,6 +34,7 @@ struct accel {
 	int16_t y;
 	int16_t z;
 	enum accel_scale scale;
+	int16_t temp;
 };
 struct accel_data {
 	struct miscdevice miscdev;
@@ -41,6 +46,7 @@ static ssize_t accel_read(struct file *f, char __user *buf, size_t count,
 {
 	struct accel acc;
 	uint8_t ret;
+	int16_t raw_temp;
 	struct accel_data *priv =
 		container_of(f->private_data, struct accel_data, miscdev);
 
@@ -48,8 +54,22 @@ static ssize_t accel_read(struct file *f, char __user *buf, size_t count,
 				      (uint8_t *)&acc);
 
 	ret = i2c_smbus_read_byte_data(priv->client, REG_CTRL1_M);
-
 	acc.scale = (ret >> 3) & 3;
+
+	ret = i2c_smbus_read_byte_data(priv->client, REG_OUT_TEMP_L);
+	raw_temp = ret;
+
+	ret = i2c_smbus_read_byte_data(priv->client, REG_OUT_TEMP_H);
+	raw_temp |= ret << 8;
+
+	//grab the 12 bits
+	raw_temp &= 0x0FFF;
+	//check if it's negative
+	if (raw_temp & 0x0800) {
+		// calculate the two's complement
+		raw_temp -= 0x1000;
+	}
+	acc.temp = raw_temp;
 
 	memcpy(buf, &acc, sizeof(acc));
 
